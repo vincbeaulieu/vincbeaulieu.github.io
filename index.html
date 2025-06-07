@@ -1,44 +1,96 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vincent Beaulieu | Ingénieur Bio-informatique</title>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:Arial,sans-serif;
-      background:#005f57;
-      color:#fff;
-      line-height:1.6;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      padding:20px;
+    :root {
+      --primary-color: #ffd700; /* Yellow */
+      --background-color: #000000; /* Black */
+      --text-color: #ffffff; /* White */
+      --highlight-color: #ffffffcc;
     }
-    .container{
-      background:rgba(0,0,0,0.4);
-      padding:30px;
-      border-radius:10px;
-      max-width:600px;
-      width:100%;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    h1{font-size:2.5rem;margin-bottom:10px}
-    h2{font-size:1.2rem;font-weight:normal;margin-bottom:20px}
-    .socials a{margin:0 10px;text-decoration:none;color:#fff;font-size:1.2rem}
-    .links{margin-top:30px}
-    .links a{
-      display:block;
-      color:#fff;
-      text-decoration:none;
-      padding:10px 0;
-      border-bottom:1px solid #fff;
-      transition:color .3s;
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
-    .links a:hover{color:#a9e5e0}
-    @media screen and (max-width:600px){
-      h1{font-size:2rem}
-      .container{padding:20px}
+
+    .container {
+      background-color: #111111;
+      padding: 40px;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      font-weight: normal;
+      margin-bottom: 30px;
+      color: var(--highlight-color);
+    }
+
+    .socials a {
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 1.4rem;
+      color: var(--text-color);
+      transition: color 0.3s;
+    }
+
+    .socials a:hover {
+      color: var(--primary-color);
+    }
+
+    .links {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .links a {
+      text-decoration: none;
+      color: var(--text-color);
+      padding: 10px 0;
+      border-bottom: 1px solid #333;
+      font-size: 1.1rem;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .links a:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      .container {
+        padding: 25px;
+      }
     }
   </style>
 </head>
@@ -54,30 +106,21 @@
     </div>
 
     <div class="links">
-      <a href="#bio">Bio</a>
-
-      <!-- Résumé link: open + download -->
-      <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf"
-         onclick="openAndDownload(this.href);return false;">
-         Résumé
-      </a>
-
-      <a href="#blog">Blog</a>
-      <a href="#book">Order My Book</a>
-      <a href="#talks">Talks and Workshops</a>
-      <a href="#contact">Contact Me</a>
+      <a href="#bio">À Propos</a>
+      <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf" onclick="openAndDownload(this.href); return false;">📄 Voir mon CV</a>
+      <a href="#header3">header 3</a>
+      <a href="#header4">header 4</a>
+      <a href="#header5">header 5</a>
+      <a href="#contact">Contact</a>
     </div>
   </div>
 
   <script>
-    function openAndDownload(url){
-      /* 1. Open in a new tab */
-      window.open(url,'_blank');
-
-      /* 2. Download silently */
-      const link=document.createElement('a');
-      link.href=url;
-      link.download='FR - Vincent Beaulieu.pdf';
+    function openAndDownload(url) {
+      window.open(url, '_blank');
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'FR - Vincent Beaulieu.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
