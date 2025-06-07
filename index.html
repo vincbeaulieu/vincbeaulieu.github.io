@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vincent Beaulieu | Ingénieur Bio-informatique</title>
   <style>
     :root {
-      --primary-color: #ffd700; /* Yellow */
-      --background-color: #000000; /* Black */
-      --text-color: #ffffff; /* White */
-      --highlight-color: #ffffffcc;
+      --yellow: #FFD700;
+      --black: #111111;
+      --white: #ffffff;
     }
 
     * {
@@ -19,18 +18,35 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      background: var(--black);
+      color: var(--white);
       display: flex;
-      justify-content: center;
-      align-items: center;
       min-height: 100vh;
-      padding: 20px;
+    }
+
+    .left-panel {
+      position: relative;
+      flex: 1;
+      min-width: 300px;
+      max-width: 50%;
+      background: var(--white);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
     }
 
     .container {
-      background-color: #111111;
+      background-color: var(--black);
       padding: 40px;
       border-radius: 12px;
       max-width: 600px;
@@ -38,92 +54,131 @@
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
     }
 
+    .yellow-stripe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 400px;
+      background: var(--yellow);
+      clip-path: polygon(0 0, 400px 0, 0 400px);
+      z-index: 1;
+    }
+
+    .black-overlay {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 400px;
+      height: 400px;
+      background: rgba(0, 0, 0, 0.7);
+      clip-path: polygon(400px 400px, 400px 0, 0 400px);
+      z-index: 2;
+    }
+
+    .photo {
+      position: relative;
+      z-index: 3;
+      width: 70%;
+      max-width: 300px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
     h1 {
       font-size: 2.5rem;
       margin-bottom: 10px;
-      color: var(--primary-color);
     }
 
     h2 {
       font-size: 1.2rem;
       font-weight: normal;
-      margin-bottom: 30px;
-      color: var(--highlight-color);
+      margin-bottom: 20px;
     }
 
     .socials a {
       margin: 0 10px;
       text-decoration: none;
-      font-size: 1.4rem;
-      color: var(--text-color);
-      transition: color 0.3s;
+      color: var(--white);
+      font-size: 1.2rem;
     }
 
-    .socials a:hover {
-      color: var(--primary-color);
-    }
-
-    .links {
+    .link-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
       margin-top: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
     }
 
     .links a {
+      display: block;
+      color: var(--white);
       text-decoration: none;
-      color: var(--text-color);
       padding: 10px 0;
-      border-bottom: 1px solid #333;
-      font-size: 1.1rem;
-      transition: color 0.3s, border-color 0.3s;
+      border-bottom: 1px solid var(--white);
+      transition: color 0.3s;
     }
 
     .links a:hover {
-      color: var(--primary-color);
-      border-color: var(--primary-color);
+      color: var(--yellow);
     }
 
-    @media screen and (max-width: 600px) {
-      h1 {
-        font-size: 2rem;
+    @media screen and (max-width: 900px) {
+      body {
+        flex-direction: column;
       }
-      .container {
-        padding: 25px;
+      .left-panel, .right-panel {
+        max-width: 100%;
+        width: 100%;
+      }
+      .yellow-stripe,
+      .black-overlay {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Vincent Beaulieu</h1>
-    <h2>Ingénieur Bio-informatique</h2>
+  <div class="left-panel">
+    <div class="yellow-stripe"></div>
+    <img src="assets/images/portrait.jpg" alt="Vincent Beaulieu" class="photo">
+    <div class="black-overlay"></div>
+  </div>
 
-    <div class="socials">
-      <a href="#" aria-label="Instagram">📸</a>
-      <a href="#" aria-label="Facebook">📘</a>
-      <a href="#" aria-label="Twitter">🐦</a>
-    </div>
+  <div class="right-panel">
+    <div class="container">
+      <h1>Vincent Beaulieu</h1>
+      <h2>Ingénieur Bio-informatique</h2>
 
-    <div class="links">
-      <a href="#bio">À Propos</a>
-      <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf" onclick="openAndDownload(this.href); return false;">📄 Voir mon CV</a>
-      <a href="#header3">header 3</a>
-      <a href="#header4">header 4</a>
-      <a href="#header5">header 5</a>
-      <a href="#contact">Contact</a>
+      <div class="socials">
+        <a href="#" aria-label="Instagram">📸</a>
+        <a href="#" aria-label="Facebook">📘</a>
+        <a href="#" aria-label="Twitter">🐦</a>
+      </div>
+
+      <div class="link-box">
+        <div class="links">
+          <a href="#bio">Bio</a>
+          <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf" onclick="openAndDownload(this.href); return false;">📄 Voir mon CV</a>
+          <a href="#blog">Blog</a>
+          <a href="#book">Commander mon livre</a>
+          <a href="#talks">Conférences et ateliers</a>
+          <a href="#contact">Me contacter</a>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
     function openAndDownload(url) {
       window.open(url, '_blank');
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'FR - Vincent Beaulieu.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = url.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   </script>
 </body>
