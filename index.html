@@ -5,73 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vincent Beaulieu | Ingénieur Bio-informatique</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:Arial,sans-serif;
+      background:#005f57;
+      color:#fff;
+      line-height:1.6;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:20px;
     }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #005f57;
-      color: white;
-      line-height: 1.6;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
+    .container{
+      background:rgba(0,0,0,0.4);
+      padding:30px;
+      border-radius:10px;
+      max-width:600px;
+      width:100%;
     }
-
-    .container {
-      background: rgba(0, 0, 0, 0.4);
-      padding: 30px;
-      border-radius: 10px;
-      max-width: 600px;
-      width: 100%;
+    h1{font-size:2.5rem;margin-bottom:10px}
+    h2{font-size:1.2rem;font-weight:normal;margin-bottom:20px}
+    .socials a{margin:0 10px;text-decoration:none;color:#fff;font-size:1.2rem}
+    .links{margin-top:30px}
+    .links a{
+      display:block;
+      color:#fff;
+      text-decoration:none;
+      padding:10px 0;
+      border-bottom:1px solid #fff;
+      transition:color .3s;
     }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-
-    h2 {
-      font-size: 1.2rem;
-      font-weight: normal;
-      margin-bottom: 20px;
-    }
-
-    .socials a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: white;
-      font-size: 1.2rem;
-    }
-
-    .links {
-      margin-top: 30px;
-    }
-
-    .links a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      padding: 10px 0;
-      border-bottom: 1px solid white;
-      transition: color 0.3s;
-    }
-
-    .links a:hover {
-      color: #a9e5e0;
-    }
-
-    @media screen and (max-width: 600px) {
-      h1 {
-        font-size: 2rem;
-      }
-      .container {
-        padding: 20px;
-      }
+    .links a:hover{color:#a9e5e0}
+    @media screen and (max-width:600px){
+      h1{font-size:2rem}
+      .container{padding:20px}
     }
   </style>
 </head>
@@ -88,12 +55,33 @@
 
     <div class="links">
       <a href="#bio">Bio</a>
-      <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf" download="FR - Vincent Beaulieu.pdf">Résumé</a>
+
+      <!-- Résumé link: open + download -->
+      <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf"
+         onclick="openAndDownload(this.href);return false;">
+         Résumé
+      </a>
+
       <a href="#blog">Blog</a>
       <a href="#book">Order My Book</a>
       <a href="#talks">Talks and Workshops</a>
       <a href="#contact">Contact Me</a>
     </div>
   </div>
+
+  <script>
+    function openAndDownload(url){
+      /* 1. Open in a new tab */
+      window.open(url,'_blank');
+
+      /* 2. Download silently */
+      const link=document.createElement('a');
+      link.href=url;
+      link.download='FR - Vincent Beaulieu.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
 </body>
 </html>
