@@ -1,131 +1,189 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vincent Beaulieu | Ingénieur Bio-informatique</title>
+
+  <!-- Font Awesome for social icons (free CDN) -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-g6qlIQ6hJaZacUEmtXlW9njjhqpMMeaiQjsQUmy5e8LCeC6sHROL9F6+cn6BYvY7FjXFKV+Pdk+gt9rXnYDG+A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   <style>
+    /* ----- Colour scheme ----- */
     :root {
-      --primary-color: #ffd700; /* Yellow */
-      --background-color: #000000; /* Black */
-      --text-color: #ffffff; /* White */
-      --highlight-color: #ffffffcc;
+      --accent: #e8ff57;          /* light yellow-green */
+      --dark:   #212733;          /* dark charcoal */
+      --text:   #ffffff;
+      --muted:  #c5c8d0;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* ----- Reset & base ----- */
+    *, *::before, *::after { box-sizing: border-box; }
     body {
+      margin: 0;
       font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
+      background: #f0f1f5;
+      color: var(--text);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 24px;
     }
 
-    .container {
-      background-color: #111111;
-      padding: 40px;
-      border-radius: 12px;
-      max-width: 600px;
+    /* ----- Grid wrapper ----- */
+    .wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 1200px;
       width: 100%;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     }
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-      color: var(--primary-color);
-    }
-
-    h2 {
-      font-size: 1.2rem;
-      font-weight: normal;
-      margin-bottom: 30px;
-      color: var(--highlight-color);
-    }
-
-    .socials a {
-      margin: 0 10px;
-      text-decoration: none;
-      font-size: 1.4rem;
-      color: var(--text-color);
-      transition: color 0.3s;
-    }
-
-    .socials a:hover {
-      color: var(--primary-color);
-    }
-
-    .links {
-      margin-top: 40px;
+    /* ----- Left column (profile) ----- */
+    .profile {
+      background: var(--dark);
+      padding: 60px 48px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 32px;
+    }
+    .profile img.headshot {
+      width: 170px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+    .profile h1 {
+      margin: 0;
+      font-size: 2.6rem;
+      line-height: 1.15;
+      color: var(--accent);
+    }
+    .profile h1 .pronouns { font-weight: 400; }
+    .profile h2 {
+      margin-top: 6px;
+      font-size: 1.15rem;
+      font-weight: normal;
+      color: var(--muted);
     }
 
-    .links a {
+    /* social icons */
+    .socials {
+      display: flex;
+      gap: 18px;
+      margin: 8px 0 16px;
+    }
+    .socials a {
+      color: var(--accent);
+      font-size: 1.3rem;
+      transition: transform 0.2s;
+    }
+    .socials a:hover { transform: translateY(-2px); }
+
+    /* buttons */
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--dark);
+      padding: 10px 30px;
+      font-weight: 600;
       text-decoration: none;
-      color: var(--text-color);
-      padding: 10px 0;
-      border-bottom: 1px solid #333;
-      font-size: 1.1rem;
-      transition: color 0.3s, border-color 0.3s;
+      border-radius: 4px;
+      transition: opacity 0.25s;
+    }
+    .btn:hover { opacity: 0.85; }
+
+    /* About section */
+    .about h3 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      color: var(--accent);
+    }
+    .about p {
+      line-height: 1.65;
+      color: var(--text);
     }
 
-    .links a:hover {
-      color: var(--primary-color);
-      border-color: var(--primary-color);
+    .btn-group {
+      margin-top: auto;          /* pushes group to bottom */
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
-    @media screen and (max-width: 600px) {
-      h1 {
-        font-size: 2rem;
-      }
-      .container {
-        padding: 25px;
-      }
+    /* ----- Right column (hero image) ----- */
+    .hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ----- Responsiveness ----- */
+    @media (max-width: 900px) {
+      .wrapper  { grid-template-columns: 1fr; }
+      .hero     { height: 280px; order: -1; }  /* image above profile */
+      .profile  { padding: 40px 32px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Vincent Beaulieu</h1>
-    <h2>Ingénieur Bio-informatique</h2>
 
-    <div class="socials">
-      <a href="#" aria-label="Instagram">📸</a>
-      <a href="#" aria-label="Facebook">📘</a>
-      <a href="#" aria-label="Twitter">🐦</a>
-    </div>
+  <div class="wrapper">
+    <!-- Profile column -->
+    <section class="profile">
+      <img src="assets/images/portrait.jpg"
+           alt="Portrait de Vincent"
+           class="headshot" />
 
-    <div class="links">
-      <a href="#bio">À Propos</a>
-      <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf" onclick="openAndDownload(this.href); return false;">📄 Voir mon Résumé</a>
-      <a href="#header3">header 3</a>
-      <a href="#header4">header 4</a>
-      <a href="#header5">header 5</a>
-      <a href="#contact">Contact</a>
-    </div>
+      <div>
+        <h1>Vincent Beaulieu<br><span class="pronouns">(il/lui)</span></h1>
+        <h2>Ingénieur Bio-informatique</h2>
+      </div>
+
+      <div class="socials">
+        <a href="https://linkedin.com/in/votrelien" aria-label="LinkedIn">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="https://twitter.com/" aria-label="Twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://facebook.com/" aria-label="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://instagram.com/" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
+
+      <a href="mailto:contact@domaine.com" class="btn">Me contacter</a>
+
+      <div class="about">
+        <h3>À propos</h3>
+        <p>
+          Je suis un ingénieur spécialisé dans le développement d’outils bio-informatiques.
+          Mon expérience couvre l’IA, les données massives et la microfluidique.
+          Ma mission est de rendre la recherche biomédicale plus efficace et plus accessible.
+        </p>
+      </div>
+
+      <div class="btn-group">
+        <a href="#portfolio" class="btn">Portfolio</a>
+        <a href="assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf" class="btn">Résumé</a>
+      </div>
+    </section>
+
+    <!-- Image column -->
+    <section class="hero">
+      <img src="assets/images/background.jpg"
+           alt="Un de mes projets récents" />
+    </section>
   </div>
 
-  <script>
-    function openAndDownload(url) {
-      window.open(url, '_blank');
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'FR - Vincent Beaulieu.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  </script>
 </body>
 </html>
