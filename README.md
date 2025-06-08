@@ -1,4 +1,5 @@
 # Vincent Beaulieu
 
-[📄 Mon résumé (PDF)](assets/downloadables/FR%20-%20Vincent%20Beaulieu.pdf)
+[📄 Mon Résumé/CV (PDF)](assets/downloadables/CV-Vincent_Beaulieu-FR.pdf)
+[📁 Mon Portfolio (PDF)](assets/downloadables/Portfolio-Vincent_Beaulieu-EN.pdf)
 
