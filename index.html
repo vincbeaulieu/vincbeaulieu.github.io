@@ -34,8 +34,8 @@
       position: relative;
     }
 
-    .overlay {
-      position: fixed;
+.overlay {
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
@@ -45,17 +45,18 @@
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
-  z-index: 0; /* Push it behind all content */
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.025) 100%);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.025) 100%);
+  z-index: 3; /* Push it behind all content */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.010) 0%,
+    rgba(0, 0, 0, 0.020) 25%,
+    rgba(0, 0, 0, 0.030) 50%,
+    rgba(0, 0, 0, 0.040) 75%,
+    rgba(0, 0, 0, 0.050) 100%
+  );
+  
   opacity: 1; /* Use mask instead of opacity */
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0.025;
-      z-index: 3;
-      pointer-events: none;
-    }
+}
 
     .split-container {
       display: flex;
