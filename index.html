@@ -61,9 +61,11 @@
 }
 
 .headshot {
-  height: 100%;
-  aspect-ratio: 3/4; /* or adjust to your photo's ratio */
-  object-fit: cover;
+  max-width: 150px; /* Adjust max size as needed */
+  max-height: 200px; /* Match aspect ratio approx 3:4 */
+  width: auto;
+  height: auto;
+object-fit: contain;
   border-radius: 6px;
   flex-shrink: 0;
 }
