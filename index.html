@@ -36,11 +36,19 @@
 
     .overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-image: url('https://www.pnnl.gov/sites/default/files/media/image/Picture4_0.jpg');
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('https://www.pnnl.gov/sites/default/files/media/image/Picture4_0.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0; /* Push it behind all content */
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.025) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.025) 100%);
+  opacity: 1; /* Use mask instead of opacity */
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
