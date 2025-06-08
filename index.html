@@ -59,16 +59,15 @@
   align-items: stretch;
   gap: 24px;
 }
-
+    
 .headshot {
-  max-width: 150px; /* Adjust max size as needed */
-  max-height: 200px; /* Match aspect ratio approx 3:4 */
-  width: auto;
-  height: auto;
-object-fit: contain;
-  border-radius: 6px;
+  height: 200px;  /* fixed height */
+  width: auto;    /* width adjusts automatically to preserve original ratio */
+  border-radius: 0; /* normal square edges */
+  object-fit: contain; /* ensures the whole image fits without distortion */
   flex-shrink: 0;
 }
+
 
     .intro-text {
       display: flex;
