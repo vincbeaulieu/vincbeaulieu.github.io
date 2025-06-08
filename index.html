@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Vincent Beaulieu | Ingénieur Bio-informatique</title>
 
   <link rel="stylesheet"
@@ -10,38 +13,51 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <style>
-    :root {
-      --bg-dark: #1d1f26;
-      --accent: #e4ff53;
-      --text: #ffffff;
-      --text-muted: #dcdcdc;
-    }
-
     html, body {
-      height: 100%;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: var(--bg-dark);
+      height: 100%;
     }
 
     body {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
+    .split-container {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .left-panel, .right-panel {
+      flex: 1;
+      min-height: 100vh;
+    }
+
     .left-panel {
-      background-color: var(--bg-dark);
-      color: var(--text);
-      width: 50%;
+      background-color: #1d1f26;
+      color: #ffffff;
       padding: 60px 40px;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 100vh;
+    }
+
+    .right-panel {
+      background-color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .right-panel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .top {
@@ -57,29 +73,23 @@
       border-radius: 6px;
     }
 
-    .intro-text {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
     .intro-text h1 {
       font-size: 2.2rem;
       font-weight: bold;
-      color: var(--accent);
+      color: #e4ff53;
       line-height: 1.2;
     }
 
-    .intro-text .pronouns {
+    .pronouns {
       font-size: 1.6rem;
       font-weight: 300;
-      color: var(--accent);
+      color: #e4ff53;
     }
 
     .intro-text h2 {
       font-size: 1rem;
       font-weight: normal;
-      color: var(--text-muted);
+      color: #dcdcdc;
     }
 
     .contact-row {
@@ -96,14 +106,14 @@
     }
 
     .socials-inline a {
-      color: var(--accent);
+      color: #e4ff53;
       font-size: 1.3rem;
       text-decoration: none;
     }
 
     .email-btn {
-      background-color: var(--accent);
-      color: var(--bg-dark);
+      background-color: #e4ff53;
+      color: #1d1f26;
       font-weight: 600;
       padding: 8px 16px;
       border: none;
@@ -119,12 +129,12 @@
 
     .about-section h3 {
       font-size: 1.2rem;
-      color: var(--accent);
+      color: #e4ff53;
       margin-bottom: 10px;
     }
 
     .about-section p {
-      color: var(--text-muted);
+      color: #dcdcdc;
       font-size: 0.95rem;
       line-height: 1.6;
     }
@@ -136,8 +146,8 @@
     }
 
     .action-buttons a {
-      background-color: var(--accent);
-      color: var(--bg-dark);
+      background-color: #e4ff53;
+      color: #1d1f26;
       font-weight: bold;
       padding: 10px 28px;
       border-radius: 4px;
@@ -145,24 +155,8 @@
       font-size: 0.95rem;
     }
 
-    .right-panel {
-      width: 50%;
-      background-color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .right-panel img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
     @media screen and (max-width: 960px) {
-      body {
+      .split-container {
         flex-direction: column;
       }
 
@@ -173,60 +167,48 @@
       .right-panel {
         height: 300px;
       }
-
-      .top {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .contact-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
     }
   </style>
 </head>
 <body>
-
-  <!-- Left Side Content -->
-  <div class="left-panel">
-    <div>
-      <div class="top">
-        <img src="assets/images/portrait.jpg" alt="Portrait de Vincent" class="headshot" />
-        <div class="intro-text">
-          <h1>Vincent Beaulieu</h1>
-          <div class="pronouns">(il/lui)</div>
-          <h2>Ingénieur Bio-informatique</h2>
-          <div class="contact-row">
-            <div class="socials-inline">
-              <a href="#"><i class="fab fa-linkedin-in"></i></a>
-              <a href="#"><i class="fab fa-twitter"></i></a>
-              <a href="#"><i class="fab fa-facebook-f"></i></a>
-              <a href="#"><i class="fab fa-instagram"></i></a>
+  <div class="split-container">
+    <div class="left-panel">
+      <div>
+        <div class="top">
+          <img src="assets/images/portrait.jpg" alt="Portrait de Vincent" class="headshot" />
+          <div class="intro-text">
+            <h1>Vincent Beaulieu</h1>
+            <div class="pronouns">(il/lui)</div>
+            <h2>Ingénieur Bio-informatique</h2>
+            <div class="contact-row">
+              <div class="socials-inline">
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+              </div>
+              <a href="mailto:contact@vincent.com" class="email-btn">ME CONTACTER</a>
             </div>
-            <a href="mailto:contact@vincent.com" class="email-btn">ME CONTACTER</a>
           </div>
         </div>
-      </div>
 
-      <div class="about-section">
-        <h3>À propos de moi</h3>
-        <p>
-          Je suis un ingénieur spécialisé dans les technologies biomédicales et le développement de solutions bio-informatiques. Avec plus de huit ans d’expérience, j’ai accompagné des centaines de clients et obtenu mon diplôme en génie à l’Université de Glen Falls.
-        </p>
-      </div>
+        <div class="about-section">
+          <h3>À propos de moi</h3>
+          <p>
+            Je suis un ingénieur spécialisé dans les technologies biomédicales et le développement de solutions bio-informatiques. Avec plus de huit ans d’expérience, j’ai accompagné des centaines de clients et obtenu mon diplôme en génie à l’Université de Glen Falls.
+          </p>
+        </div>
 
-      <div class="action-buttons">
-        <a href="#">PORTFOLIO</a>
-        <a href="assets/downloadables/FR - Vincent Beaulieu.pdf">RÉSUMÉ</a>
+        <div class="action-buttons">
+          <a href="#">PORTFOLIO</a>
+          <a href="assets/downloadables/FR - Vincent Beaulieu.pdf">RÉSUMÉ</a>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Right Side Image -->
-  <div class="right-panel">
-    <img src="assets/images/maison.jpg" alt="Projet architectural" />
+    <div class="right-panel">
+      <img src="assets/images/maison.jpg" alt="Projet architectural" />
+    </div>
   </div>
-
 </body>
 </html>
