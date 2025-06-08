@@ -31,12 +31,30 @@
       font-family: 'Segoe UI', Tahoma, sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
+      position: relative;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('https://www.pnnl.gov/sites/default/files/media/image/Picture4_0.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.045;
+      z-index: 3;
+      pointer-events: none;
     }
 
     .split-container {
       display: flex;
       width: 100%;
       min-height: 100vh;
+      position: relative;
+      z-index: 2;
     }
 
     .left-panel, .right-panel {
@@ -198,6 +216,8 @@
   </style>
 </head>
 <body>
+  <div class="overlay"></div> <!-- translucent image overlay -->
+
   <div class="split-container">
     <div class="left-panel">
       <div>
@@ -236,7 +256,7 @@
     </div>
 
     <div class="right-panel">
-      <img src="assets/images/background_2.jpg" alt="Stylized DNA and molecular biology icons background" />
+      <img src="assets/images/background.png" alt="Stylized DNA and molecular biology icons background" />
     </div>
   </div>
 </body>
