@@ -34,10 +34,10 @@ body {
   -webkit-mask-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.000) 0%,
-    rgba(0, 0, 0, 0.000) 25%,
-    rgba(0, 0, 0, 0.010) 50%,
-    rgba(0, 0, 0, 0.050) 75%,
-    rgba(0, 0, 0, 0.100) 100%
+    rgba(0, 0, 0, 0.010) 25%,
+    rgba(0, 0, 0, 0.050) 50%,
+    rgba(0, 0, 0, 0.100) 75%,
+    rgba(0, 0, 0, 0.500) 100%
   );
   opacity: 1; /* Use mask instead of opacity */
 }
