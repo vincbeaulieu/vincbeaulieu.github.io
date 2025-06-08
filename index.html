@@ -58,16 +58,14 @@
   display: flex;
   align-items: stretch;
   gap: 24px;
-  /* Set a max-width for the .top container to control image size */
-  max-width: 320px; /* Adjust this value as needed to match the screenshot */
 }
 
 .headshot {
-  width: 100%; /* Make the image fill the width of its parent */
-  height: auto;
-  /* Removed border-radius for square edges */
-  object-fit: cover; /* Ensures the image covers the area, cropping if necessary */
-  flex-shrink: 0; /* Prevent the image from shrinking */
+  height: 100%;
+  aspect-ratio: 3/4; /* or adjust to your photo's ratio */
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
     .intro-text {
