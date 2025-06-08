@@ -60,20 +60,25 @@
   gap: 24px;
 }
     
+
 .headshot {
-  height: 200px;  /* fixed height */
-  width: auto;    /* width adjusts automatically to preserve original ratio */
-  border-radius: 0; /* normal square edges */
-  object-fit: contain; /* ensures the whole image fits without distortion */
+  height: 200px;
+  width: auto;
+  border-radius: 0;
+  object-fit: contain;
   flex-shrink: 0;
+  margin-left: 20px;   /* increase left space */
+  margin-right: 20px;  /* increase right space */
 }
 
+.intro-text h1 {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #e4ff53;
+  line-height: 1.1;     /* reduce line height to tighten vertical space */
+  margin-bottom: 4px;   /* reduce bottom margin */
+}
 
-    .intro-text {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
 
     .intro-text h1 {
       font-size: 2.2rem;
@@ -82,11 +87,13 @@
       line-height: 1.2;
     }
 
-    .pronouns {
-      font-size: 1.6rem;
-      font-weight: 300;
-      color: #e4ff53;
-    }
+.pronouns {
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: #e4ff53;
+  margin-top: 0;       /* remove default top margin */
+}
+
 
     .intro-text h2 {
       font-size: 1rem;
