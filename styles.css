@@ -30,7 +30,6 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   pointer-events: none;
-  z-index: 3; /* Push it behind all content */
   -webkit-mask-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.000) 0%,
@@ -40,6 +39,7 @@ body {
     rgba(0, 0, 0, 0.500) 100%
   );
   opacity: 1; /* Use mask instead of opacity */
+  z-index: 3; /* Push it behind all content */
 }
 
 .split-container {
@@ -47,7 +47,7 @@ body {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  z-index: 2;
+
 }
 
 .left-panel,
@@ -72,7 +72,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  z-index: 3;
+  z-index: 2;
 }
 
 .right-panel img {
