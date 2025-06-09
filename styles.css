@@ -1,5 +1,6 @@
 :root {
   --teal-background: #5aa6a5;
+  --teal-foreground: #78b4af;
   --teal-light: #bce0df;
   --teal-dark: #2b6d6c;
   --teal-accent: #88c8c7;
@@ -21,10 +22,7 @@ body {
 
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background-image: url('assets/images/overlay.jpg');
   background-size: cover;
   background-position: center;
@@ -39,67 +37,57 @@ body {
     rgba(0, 0, 0, 0.500) 100%
   );
   opacity: 1; /* Use mask instead of opacity */
-  z-index: 3; /* Push it behind all content */
+  z-index: 1; /* Push it behind all content */
 }
 
 .split-container {
   display: flex;
-  width: 100%;
-  min-height: 100vh;
+  height: 100%;
   position: relative;
 }
 
 .left-panel,
 .right-panel {
   flex: 1;
-  min-height: 100vh;
+  overflow-y: auto; /* Optional: scroll if content exceeds height */
 }
 
 .left-panel {
   background-color: #1d1f26;
   color: var(--white-soft);
   padding: 60px 40px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .right-panel {
-  background-color: var(--teal-background);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  z-index: 4;
-}
-
-.right-panel img {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
+  background-color: var(--teal-foreground);
+  background-image: url('assets/images/background.png');
+  background-repeat: repeat-y;      /* Reeats both horizontally and vertically */
+  background-position: top center;  /* Aligns pattern to the top */
+  background-size: contain;         /* Keeps original image size */
+  z-index: 2;
 }
 
 .top {
   display: flex;
-  align-items: stretch;
-  gap: 24px;
+  gap: 16px;
 }
 
 .headshot {
-  height: 200px;
-  width: auto;
-  border-radius: 0;
+  width: 100%;
+  max-width: 200px;
+  max-height: 500px;
   object-fit: contain;
   flex-shrink: 0;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin: 0 20px;
+  z-index: 3;
+  pointer-events: none;
 }
 
 .intro-text {
-  display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  display: flex;
 }
 
 .intro-text h1 {
@@ -107,14 +95,14 @@ body {
   font-weight: bold;
   color: var(--teal-light);
   line-height: 1.1;
-  margin-bottom: 4px;
+  margin: 0 0 4px 0;
 }
 
-.pronouns {
+.intro-text p {
   font-size: 1.6rem;
   font-weight: 300;
   color: var(--teal-accent);
-  margin-top: 0;
+  margin: 0 0 4px 0;
 }
 
 .intro-text h2 {
@@ -124,7 +112,6 @@ body {
 }
 
 .contact-row {
-  margin-top: 12px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -153,12 +140,13 @@ body {
   font-weight: 600;
   font-size: 0.95rem;
   padding: 6px 0;
-  width: 200px;
+  width: 100%;
   text-align: center;
   border-radius: 4px;
   text-decoration: none;
   display: inline-block;
   transition: background-color 0.3s ease, color 0.3s ease;
+  
 }
 
 .btn:hover {
@@ -184,8 +172,7 @@ body {
 
 .action-buttons {
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  gap: 40px;
   margin-top: 30px;
 }
 
@@ -194,17 +181,15 @@ body {
   color: var(--white-soft);
 }
 
-@media screen and (max-width: 960px) {
-  .split-container {
+@media screen and (max-width: 640px) {
+  .top {
     flex-direction: column;
+    align-items: center;
   }
+}
 
-  .left-panel,
+@media screen and (max-width: 1000px) {
   .right-panel {
-    width: 100%;
-  }
-
-  .right-panel {
-    height: 300px;
+    display: none;
   }
 }
