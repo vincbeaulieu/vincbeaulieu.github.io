@@ -124,14 +124,16 @@ body {
 }
 
 .socials-inline a {
-  color: var(--teal-light);
-  font-size: 1.3rem;
+  color: var(--teal-light);  
+  font-size: 1.75rem;
+  margin-right: 4px;
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .socials-inline a:hover {
   color: var(--teal-dark);
+  transform: scale(1.2);
 }
 
 .btn {
