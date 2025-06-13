@@ -106,7 +106,7 @@ body {
 }
 
 .intro-text h2 {
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: normal;
   color: var(--white-soft);
 }
@@ -125,7 +125,7 @@ body {
 
 .socials-inline a {
   color: var(--teal-light);  
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   margin-right: 4px;
   text-decoration: none;
   transition: color 0.3s ease, transform 0.3s ease;
