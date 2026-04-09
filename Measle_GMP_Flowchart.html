@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GMP Process Flowchart - Measles Vaccine</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#0B1F3A; --navy2:#112845; --navy3:#1A3A5C; --blue:#1E5FAD; --blue2:#2E7DD1; --accent:#00A8E8;
+      --teal:#0D7377; --green:#1B7A4A; --amber:#C87D11; --red:#B5292A; --slate:#4A6080; --muted:#8CA0B8;
+      --line:#2A4A6B; --white:#F0F4F8; --white2:#E2EAF4; --bg:#06121F;
+      box-sizing:border-box;
+    }
+    body{margin:0;background:var(--bg);color:var(--white);font-family:'IBM Plex Sans',sans-serif; padding: 40px;}
+    .container { max-width: 1200px; margin: auto; background: rgba(11,31,58,0.4); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+    h2 { font-size: 22px; color: var(--accent); border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 30px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 1px;}
+    
+    /* SVG Styling */
+    .node-rect { fill: var(--navy3); stroke: var(--blue2); stroke-width: 1.5; }
+    .node-header { fill: var(--blue); stroke: var(--blue2); stroke-width: 1.5; }
+    .node-text-header { fill: white; font-weight: 600; font-size: 11px; font-family: 'IBM Plex Mono', monospace; }
+    .node-text-body { fill: var(--white2); font-size: 9.5px; }
+    .node-text-label { fill: var(--accent); font-size: 8px; font-weight: 600; text-transform: uppercase; }
+    .node-text-value { fill: #94FBAB; font-size: 9.5px; font-weight: 600; }
+    .arrow { stroke: var(--blue2); stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    .qc-indicator { fill: var(--teal); stroke: var(--accent); stroke-width: 1; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Measles Vaccine: Downstream GMP Manufacturing Flow</h2>
+  
+  <svg width="1150" height="850" viewBox="0 0 1150 850" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#2E7DD1" />
+      </marker>
+    </defs>
+
+    <g transform="translate(50,50)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Seed Train (ST-101)</text>
+      <text x="10" y="45" class="node-text-label">Input:</text> <text x="60" y="45" class="node-text-body">WCB Thaw (1 mL)</text>
+      <text x="10" y="60" class="node-text-label">Media:</text> <text x="60" y="60" class="node-text-body">Low-serum DMEM</text>
+      <text x="10" y="75" class="node-text-label">CPP:</text> <text x="60" y="75" class="node-text-body">37°C, 5% CO2</text>
+      <text x="10" y="90" class="node-text-label">CQA:</text> <text x="60" y="90" class="node-text-body">VCD 0.3-0.5 x 10^6</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Inoculum (50 L)</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">N/A</text>
+    </g>
+
+    <g transform="translate(320,50)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Bioreactor (BR-101)</text>
+      <text x="10" y="45" class="node-text-label">Type:</text> <text x="60" y="45" class="node-text-body">Vertical Wheel (VWB)</text>
+      <text x="10" y="60" class="node-text-label">Scale:</text> <text x="60" y="60" class="node-text-body">1000 L Batch</text>
+      <text x="10" y="75" class="node-text-label">CPP:</text> <text x="60" y="75" class="node-text-body">32°C Post-Infection</text>
+      <text x="10" y="90" class="node-text-label">Titer:</text> <text x="60" y="90" class="node-text-body">10^7 TCID50/mL</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Crude Harvest</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="190" y="140" class="node-text-value">100%</text>
+    </g>
+
+    <g transform="translate(590,50)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Depth Filtration (CL-101)</text>
+      <text x="10" y="45" class="node-text-label">Membr:</text> <text x="60" y="45" class="node-text-body">Polypropylene (Sartopure)</text>
+      <text x="10" y="60" class="node-text-label">Type:</text> <text x="60" y="60" class="node-text-body">Low-shear Clarification</text>
+      <text x="10" y="75" class="node-text-label">Input:</text> <text x="60" y="75" class="node-text-body">1000 L Crude</text>
+      <text x="10" y="90" class="node-text-label">Waste:</text> <text x="60" y="90" class="node-text-body">Cell Debris / Retentate</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Clarified Harvest (850 L)</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">85%</text>
+    </g>
+
+    <g transform="translate(860,50)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Diafiltration (DF-101)</text>
+      <text x="10" y="45" class="node-text-label">Membr:</text> <text x="60" y="45" class="node-text-body">TFF 100-300 kDa MWCO</text>
+      <text x="10" y="60" class="node-text-label">Buffer:</text> <text x="60" y="60" class="node-text-body">PBS pH 7.4 (5-10 DV)</text>
+      <text x="10" y="75" class="node-text-label">Factor:</text> <text x="60" y="75" class="node-text-body">10x Concentration</text>
+      <text x="10" y="90" class="node-text-label">CQA:</text> <text x="60" y="90" class="node-text-body">Protein reduction</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Conc. Harvest (85 L)</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">97%</text>
+    </g>
+
+    <g transform="translate(860,300)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Ion-Exchange (INX-101)</text>
+      <text x="10" y="45" class="node-text-label">Resin:</text> <text x="60" y="45" class="node-text-body">Anion Exchange (AEX)</text>
+      <text x="10" y="60" class="node-text-label">Wash:</text> <text x="60" y="60" class="node-text-body">Low-salt PBS</text>
+      <text x="10" y="75" class="node-text-label">Eluate:</text> <text x="60" y="75" class="node-text-body">Step Salt Gradient</text>
+      <text x="10" y="90" class="node-text-label">CQA:</text> <text x="60" y="90" class="node-text-body">HCP Removal</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Purified Antigen</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">80%</text>
+    </g>
+
+    <g transform="translate(590,300)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">SEC Polishing (SEC-101)</text>
+      <text x="10" y="45" class="node-text-label">Resin:</text> <text x="60" y="45" class="node-text-body">Size-Exclusion Resin</text>
+      <text x="10" y="60" class="node-text-label">Buffer:</text> <text x="60" y="60" class="node-text-body">Formulation Buffer</text>
+      <text x="10" y="75" class="node-text-label">Waste:</text> <text x="60" y="75" class="node-text-body">Aggregates / Fragments</text>
+      <text x="10" y="90" class="node-text-label">CQA:</text> <text x="60" y="90" class="node-text-body">High Purity Antigen</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Polished Fraction</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">90%</text>
+    </g>
+
+    <g transform="translate(320,300)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Benzonase (MX-101)</text>
+      <text x="10" y="45" class="node-text-label">Enzyme:</text> <text x="60" y="45" class="node-text-body">25-100 U/mL</text>
+      <text x="10" y="60" class="node-text-label">CPP:</text> <text x="60" y="60" class="node-text-body">37°C Incubation</text>
+      <text x="10" y="75" class="node-text-label">Target:</text> <text x="60" y="75" class="node-text-body">Host Cell DNA</text>
+      <text x="10" y="90" class="node-text-label">CQA:</text> <text x="60" y="90" class="node-text-body">&lt; 10ng DNA / Dose</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">DNA-digested Bulk</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">98%</text>
+    </g>
+
+    <g transform="translate(50,300)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Diafiltration (DF-102)</text>
+      <text x="10" y="45" class="node-text-label">Membr:</text> <text x="60" y="45" class="node-text-body">TFF 100 kDa MWCO</text>
+      <text x="10" y="60" class="node-text-label">Wash:</text> <text x="60" y="60" class="node-text-body">Removal of Enzyme/Resid.</text>
+      <text x="10" y="75" class="node-text-label">Buffer:</text> <text x="60" y="75" class="node-text-body">Stabilizer Exchange</text>
+      <text x="10" y="90" class="node-text-label">QC Hold:</text> <text x="60" y="90" class="node-text-body">Antigen Content Check</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Pre-Inactivation Bulk</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">97%</text>
+    </g>
+
+    <g transform="translate(320,550)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" />
+      <rect x="0" y="0" width="220" height="25" rx="4" class="node-header" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Viral Inactivation (MX-102)</text>
+      <text x="10" y="45" class="node-text-label">Agent:</text> <text x="60" y="45" class="node-text-body">Diethyl Ether (163 CAD/L)</text>
+      <text x="10" y="60" class="node-text-label">CPP:</text> <text x="60" y="60" class="node-text-body">0-4°C for 16 h</text>
+      <text x="10" y="75" class="node-text-label">Process:</text> <text x="60" y="75" class="node-text-body">Hermetic Mix / Stripping</text>
+      <text x="10" y="90" class="node-text-label">QC Hold:</text> <text x="60" y="90" class="node-text-body">Complete Inactivation QC</text>
+      <text x="10" y="115" class="node-text-label">Output:</text> <text x="60" y="115" class="node-text-body">Inactivated Bulk (10 L)</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">98%</text>
+    </g>
+
+    <g transform="translate(590,550)">
+      <rect x="0" y="0" width="220" height="150" rx="4" class="node-rect" stroke="#00A8E8" />
+      <rect x="0" y="0" width="220" height="25" rx="4" fill="#0D7377" />
+      <text x="110" y="17" text-anchor="middle" class="node-text-header">Formulation & Finish</text>
+      <text x="10" y="45" class="node-text-label">Fill:</text> <text x="60" y="45" class="node-text-body">Aseptic Ampule Filling</text>
+      <text x="10" y="60" class="node-text-label">Process:</text> <text x="60" y="60" class="node-text-body">Lyophilization</text>
+      <text x="10" y="75" class="node-text-label">Storage:</text> <text x="60" y="75" class="node-text-body">2-8°C, Light Protected</text>
+      <text x="10" y="90" class="node-text-label">CQA:</text> <text x="60" y="90" class="node-text-body">Thermostability / Sterility</text>
+      <text x="10" y="115" class="node-text-label">Product:</text> <text x="60" y="115" class="node-text-body">Measles Vaccine Vials</text>
+      <text x="160" y="140" class="node-text-label">Yield:</text> <text x="195" y="140" class="node-text-value">98%</text>
+    </g>
+
+    <path d="M 270 125 L 320 125" class="arrow" />
+    <path d="M 540 125 L 590 125" class="arrow" />
+    <path d="M 810 125 L 860 125" class="arrow" />
+    
+    <path d="M 970 200 L 970 300" class="arrow" />
+    
+    <path d="M 860 375 L 810 375" class="arrow" />
+    <path d="M 590 375 L 540 375" class="arrow" />
+    <path d="M 320 375 L 270 375" class="arrow" />
+    
+    <path d="M 160 450 L 320 575" class="arrow" />
+    
+    <path d="M 540 625 L 590 625" class="arrow" />
+
+  </svg>
+</div>
+
+</body>
+</html>
