@@ -1,0 +1,3973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMP Process Flow — AAV2-hRPE65v2 Biomanufacturing Platform</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM
+═══════════════════════════════════════════════ */
+:root {
+  /* Primary palette */
+  --navy:       #0B2E5C;
+  --navy-light: #1B4F8A;
+  --navy-pale:  #EAF0F8;
+  --blue:       #2563EB;
+  --blue-light: #DBEAFE;
+
+  /* Phase colors */
+  --c-ce:   #7C3AED; /* Cell Engineering — violet */
+  --c-up:   #0369A1; /* Upstream — blue */
+  --c-ds:   #047857; /* Downstream — teal-green */
+  --c-fm:   #7C3AED; /* Formulation — violet */
+  --c-qc:   #92400E; /* QC/Release — amber-brown */
+
+  /* Pale tints */
+  --ce-bg:  #F5F3FF;
+  --up-bg:  #F0F9FF;
+  --ds-bg:  #F0FDF4;
+  --fm-bg:  #F5F3FF;
+  --qc-bg:  #FFFBEB;
+
+  /* Functional */
+  --ok:     #15803D;
+  --ok-bg:  #DCFCE7;
+  --warn:   #B45309;
+  --warn-bg:#FEF3C7;
+  --err:    #991B1B;
+  --err-bg: #FEE2E2;
+  --info:   #1D4ED8;
+  --info-bg:#DBEAFE;
+
+  /* Neutrals */
+  --gray-50:  #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+
+  --white: #FFFFFF;
+  --page-bg: #F4F6F9;
+
+  --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.05);
+  --shadow-lg: 0 10px 28px rgba(0,0,0,.1), 0 4px 8px rgba(0,0,0,.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--page-bg);
+  color: var(--gray-800);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════
+   DOCUMENT HEADER
+═══════════════════════════════════════════════ */
+.doc-header {
+  background: var(--navy);
+  color: white;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.doc-header-inner {
+  display: flex;
+  align-items: stretch;
+  min-height: 64px;
+}
+
+.doc-header-brand {
+  background: #071E3D;
+  padding: 14px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 220px;
+  flex-shrink: 0;
+}
+
+.brand-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.5);
+  margin-bottom: 3px;
+}
+
+.brand-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: .01em;
+}
+
+.doc-header-content {
+  flex: 1;
+  padding: 10px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-left: 1px solid rgba(255,255,255,.1);
+}
+
+.doc-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.doc-header-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.6);
+  letter-spacing: .01em;
+}
+
+.doc-header-meta {
+  display: flex;
+  gap: 0;
+  border-left: 1px solid rgba(255,255,255,.1);
+  flex-shrink: 0;
+}
+
+.meta-cell {
+  padding: 10px 18px;
+  border-right: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.meta-key {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 2px;
+}
+
+.meta-val {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,.9);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════
+   CONTROL BAR
+═══════════════════════════════════════════════ */
+.control-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 44px;
+  position: sticky;
+  top: 64px;
+  z-index: 99;
+  box-shadow: 0 1px 0 var(--gray-200);
+}
+
+.cb-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  border-right: 1px solid var(--gray-200);
+  height: 44px;
+}
+
+.cb-section:first-child { padding-left: 0; }
+
+.cb-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  white-space: nowrap;
+}
+
+.cb-btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-300);
+  background: var(--white);
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+
+.cb-btn:hover {
+  background: var(--gray-50);
+  border-color: var(--gray-400);
+  color: var(--gray-800);
+}
+
+.cb-btn.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: white;
+}
+
+.cb-btn.accent {
+  background: var(--navy-light);
+  border-color: var(--navy-light);
+  color: white;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--gray-100);
+  border-radius: var(--radius);
+  padding: 2px;
+}
+
+.view-tab {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.view-tab.active {
+  background: var(--white);
+  color: var(--navy);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════
+   LEGEND BAR
+═══════════════════════════════════════════════ */
+.legend-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.leg-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--gray-600);
+}
+
+.leg-shape-rect { width: 14px; height: 10px; border-radius: 2px; }
+.leg-shape-diamond {
+  width: 11px; height: 11px;
+  transform: rotate(45deg);
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+.leg-shape-para {
+  width: 16px; height: 10px;
+  clip-path: polygon(12% 0%, 100% 0%, 88% 100%, 0% 100%);
+  flex-shrink: 0;
+}
+.leg-shape-term {
+  width: 20px; height: 10px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.leg-shape-hex {
+  width: 14px; height: 14px;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  flex-shrink: 0;
+}
+
+.leg-sep { width: 1px; height: 18px; background: var(--gray-200); }
+
+/* ═══════════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════════ */
+.main-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  min-height: calc(100vh - 110px);
+}
+
+/* ═══════════════════════════════════════════════
+   SWIM LANE LABELS (left sidebar)
+═══════════════════════════════════════════════ */
+.swim-labels {
+  width: 44px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-right: 1px solid var(--gray-200);
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.swim-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--gray-200);
+  color: var(--white);
+}
+
+/* ═══════════════════════════════════════════════
+   FLOW CANVAS
+═══════════════════════════════════════════════ */
+.flow-canvas {
+  flex: 1;
+  padding: 24px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* ═══════════════════════════════════════════════
+   ECONOMIC PANEL (right)
+═══════════════════════════════════════════════ */
+.econ-panel {
+  width: 400px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-left: 1px solid var(--gray-200);
+  height: calc(100vh - 110px);
+  overflow-y: auto;
+  position: sticky;
+  top: 110px;
+}
+
+.econ-panel.hidden { display: none; }
+
+.econ-panel-header {
+  background: var(--navy);
+  color: white;
+  padding: 14px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.econ-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.econ-panel-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,.6);
+  margin-top: 2px;
+}
+
+.econ-tabs {
+  display: flex;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.econ-tab {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+}
+
+.econ-tab.active {
+  color: var(--navy);
+  border-bottom-color: var(--navy);
+  background: var(--white);
+}
+
+.econ-content { padding: 16px 20px; }
+.econ-tab-panel { display: none; }
+.econ-tab-panel.active { display: block; }
+
+/* Economic metric cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.kpi-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1;
+}
+
+.kpi-sub {
+  font-size: 9px;
+  color: var(--gray-400);
+  margin-top: 3px;
+}
+
+.kpi-value.good { color: var(--ok); }
+.kpi-value.warn { color: var(--warn); }
+
+/* Cost row table */
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+
+.cost-table thead th {
+  background: var(--navy);
+  color: white;
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cost-table tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: top;
+  color: var(--gray-700);
+}
+
+.cost-table tbody tr:hover td { background: var(--gray-50); }
+.cost-table tbody td:last-child { text-align: right; font-weight: 600; color: var(--gray-900); white-space: nowrap; }
+.cost-table tfoot td { background: var(--gray-100); font-weight: 700; color: var(--navy); padding: 8px 10px; border-top: 2px solid var(--navy); }
+.cost-table tfoot td:last-child { font-size: 13px; }
+
+/* Bar chart row */
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: var(--gray-600);
+  width: 140px;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+.bar-track {
+  flex: 1;
+  height: 12px;
+  background: var(--gray-100);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 12px;
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+
+.bar-val {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gray-700);
+  width: 65px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* References */
+.econ-refs {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-top: 12px;
+}
+
+.econ-refs-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+
+.econ-ref-item {
+  font-size: 9px;
+  color: var(--gray-500);
+  line-height: 1.5;
+  margin-bottom: 3px;
+}
+
+.econ-ref-item a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.econ-ref-item a:hover { text-decoration: underline; }
+
+/* Section header inside econ */
+.econ-section {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--navy);
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 4px;
+  margin: 14px 0 8px;
+}
+
+/* ═══════════════════════════════════════════════
+   FLOWCHART PHASE BLOCK
+═══════════════════════════════════════════════ */
+.phase-section {
+  margin-bottom: 6px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+}
+
+/* Phase header — always visible, acts as phase-level collapse trigger */
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s;
+  min-height: 40px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.phase-header:hover { background: var(--gray-50); }
+
+.phase-tag {
+  padding: 0 14px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: white;
+  white-space: nowrap;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.phase-title {
+  flex: 1;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-900);
+  border-left: 1px solid var(--gray-200);
+}
+
+.phase-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-left: 1px solid var(--gray-200);
+  min-height: 40px;
+}
+
+.phase-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.phase-chevron {
+  width: 36px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  font-size: 11px;
+  border-left: 1px solid var(--gray-200);
+  transition: transform .2s ease;
+  flex-shrink: 0;
+}
+
+.phase-chevron.open { transform: rotate(180deg); }
+
+/* Phase body — collapsible */
+.phase-body {
+  background: var(--white);
+  display: block;
+  overflow: hidden;
+  transition: max-height .3s ease;
+}
+
+.phase-body.collapsed {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════
+   STEP ROWS (inside phase body)
+═══════════════════════════════════════════════ */
+/* The connector zone between steps */
+.connector-zone {
+  display: flex;
+  align-items: stretch;
+  padding: 0 20px;
+  min-height: 28px;
+}
+
+.connector-spine {
+  width: 2px;
+  background: var(--gray-300);
+  margin: 0 auto;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.connector-arrow {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid var(--gray-400);
+}
+
+.connector-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-family: var(--mono);
+  color: var(--gray-500);
+  padding: 3px 8px;
+  align-self: center;
+  flex-wrap: wrap;
+}
+
+.stream-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--mono);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.sc-in  { border-color: #93C5FD; color: #1D4ED8; background: #EFF6FF; }
+.sc-buf { border-color: #C4B5FD; color: #5B21B6; background: #F5F3FF; }
+.sc-out { border-color: #86EFAC; color: #15803D; background: #F0FDF4; }
+
+/* Horizontal splitter for parallel ops */
+.connector-split {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.split-line { flex: 1; height: 1px; background: var(--gray-300); }
+.split-label { font-size: 9px; font-weight: 600; color: var(--gray-400); white-space: nowrap; letter-spacing: .06em; text-transform: uppercase; }
+
+/* ═══════════════════════════════════════════════
+   STEP CARD (process rectangle)
+═══════════════════════════════════════════════ */
+.step-wrap {
+  padding: 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-card {
+  width: 100%;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: var(--white);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, border-color .2s;
+}
+
+.step-card:hover { box-shadow: var(--shadow); }
+
+/* Step header — collapse trigger */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  user-select: none;
+  min-height: 36px;
+  border-bottom: 1px solid transparent;
+  transition: background .15s;
+}
+
+.step-header:hover { background: var(--gray-50); }
+
+.step-code {
+  padding: 0 10px;
+  font-size: 9px;
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--gray-500);
+  min-width: 56px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gray-200);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.step-icon {
+  width: 32px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gray-100);
+}
+
+.step-name {
+  flex: 1;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.step-type-badge {
+  padding: 0 10px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  border-left: 1px solid var(--gray-100);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.step-yield-pill {
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 600;
+  border-left: 1px solid var(--gray-200);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: var(--mono);
+}
+
+.step-chevron {
+  width: 32px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-400);
+  font-size: 10px;
+  border-left: 1px solid var(--gray-200);
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+
+.step-chevron.open { transform: rotate(180deg); }
+
+/* Step body — collapsible detail panel */
+.step-body {
+  display: none;
+  border-top: 1px solid var(--gray-200);
+}
+
+.step-body.open { display: block; }
+
+/* Tab bar inside step body */
+.step-tabs {
+  display: flex;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.step-tab {
+  padding: 6px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.step-tab.active {
+  color: var(--navy);
+  border-bottom-color: var(--navy);
+  background: var(--white);
+}
+
+.step-tab-panel { display: none; padding: 14px 16px; }
+.step-tab-panel.active { display: block; }
+
+/* Two-column grid inside step detail */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.detail-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.detail-col-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+/* Parameter table */
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.param-table tr td {
+  padding: 3px 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.param-table tr:last-child td { border-bottom: none; }
+
+.param-table td:first-child {
+  font-weight: 600;
+  color: var(--gray-500);
+  width: 42%;
+  padding-right: 8px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.param-table td:last-child {
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.val-hl { color: var(--navy); font-weight: 600; }
+.val-ok { color: var(--ok); font-weight: 600; }
+.val-warn { color: var(--warn); font-weight: 600; }
+.val-err { color: var(--err); font-weight: 600; }
+
+/* Tag row */
+.tag-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid;
+}
+
+.tag-cpp  { background: #EFF6FF; color: #1E40AF; border-color: #BFDBFE; }
+.tag-cqa  { background: #F0FDF4; color: #14532D; border-color: #BBF7D0; }
+.tag-pat  { background: #FFFBEB; color: #78350F; border-color: #FDE68A; }
+.tag-equip{ background: #F5F3FF; color: #3730A3; border-color: #DDD6FE; }
+.tag-waste{ background: #FEF2F2; color: #7F1D1D; border-color: #FECACA; }
+
+/* Annotation box */
+.annotation {
+  background: var(--gray-50);
+  border-left: 3px solid var(--gray-400);
+  padding: 8px 12px;
+  font-size: 10px;
+  color: var(--gray-600);
+  line-height: 1.5;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-top: 8px;
+}
+
+.annotation.warn {
+  background: var(--warn-bg);
+  border-left-color: var(--warn);
+  color: #92400E;
+}
+
+/* Hold point / decision note */
+.hold-point {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  border-radius: var(--radius);
+  font-size: 10px;
+  font-weight: 600;
+  color: #78350F;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════
+   DECISION DIAMOND
+═══════════════════════════════════════════════ */
+.decision-wrap {
+  padding: 8px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.decision-card {
+  position: relative;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diamond {
+  width: 220px;
+  height: 64px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diamond::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #FFFBEB;
+  border: 2px solid #D97706;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.diamond-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 36px;
+}
+
+.diamond-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: #92400E;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  line-height: 1.3;
+}
+
+.diamond-sub {
+  font-size: 9px;
+  color: #B45309;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+.decision-branches {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.branch-pass {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ok);
+  background: var(--ok-bg);
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid #86EFAC;
+  font-size: 10px;
+}
+
+.branch-fail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--err);
+  background: var(--err-bg);
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid #FECACA;
+  font-size: 10px;
+}
+
+/* ═══════════════════════════════════════════════
+   TERMINATOR
+═══════════════════════════════════════════════ */
+.terminator-wrap {
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.terminator {
+  padding: 10px 36px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-align: center;
+  border: 2px solid;
+}
+
+.term-start {
+  background: #F0FDF4;
+  border-color: #16A34A;
+  color: #14532D;
+}
+
+.term-end {
+  background: var(--navy-pale);
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+/* ═══════════════════════════════════════════════
+   STORAGE CARD
+═══════════════════════════════════════════════ */
+.storage-wrap {
+  padding: 6px 20px 6px;
+  display: flex;
+  justify-content: center;
+}
+
+.storage-card {
+  border: 1.5px solid var(--gray-300);
+  border-radius: 20px;
+  background: var(--gray-50);
+  padding: 10px 24px;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.storage-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 4px;
+}
+
+.storage-detail {
+  font-size: 10px;
+  color: var(--gray-500);
+  line-height: 1.6;
+  font-family: var(--mono);
+}
+
+/* ═══════════════════════════════════════════════
+   YIELD SUMMARY TABLE
+═══════════════════════════════════════════════ */
+.yield-section {
+  margin: 16px 20px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.yield-section-header {
+  background: var(--navy);
+  color: white;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.yield-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.yield-table thead th {
+  background: var(--gray-100);
+  color: var(--gray-600);
+  padding: 7px 10px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.yield-table tbody td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-700);
+  vertical-align: top;
+}
+
+.yield-table tbody tr:hover td { background: #FAFBFC; }
+.yield-table td.yl { color: var(--ok); font-weight: 700; }
+.yield-table td.yw { color: var(--warn); font-weight: 600; }
+.yield-table tfoot td { background: var(--navy); color: white; font-weight: 700; padding: 8px 10px; }
+
+/* ═══════════════════════════════════════════════
+   PRINT STYLES
+═══════════════════════════════════════════════ */
+@media print {
+  .control-bar, .econ-panel { display: none !important; }
+  .phase-body.collapsed { display: block !important; }
+  .step-body { display: block !important; }
+  body { background: white; font-size: 10px; }
+  .doc-header { position: relative; }
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+</style>
+</head>
+<body>
+
+<!-- ═══════ DOCUMENT HEADER ═══════ -->
+<div class="doc-header">
+  <div class="doc-header-inner">
+    <div class="doc-header-brand">
+      <div class="brand-label">BIEN 685 — McGill University</div>
+      <div class="brand-title">Biomanufacturing PFD</div>
+    </div>
+    <div class="doc-header-content">
+      <div class="doc-header-title">GMP Process Flow Diagram: Novel AAV2-hRPE65v2 Stable Inducible HEK293SF Producer Cell Line Platform</div>
+      <div class="doc-header-sub">Design &amp; Biomanufacturing of Viral Vectors for Gene and Cell Therapy &nbsp;&middot;&nbsp; April 17, 2026 &nbsp;&middot;&nbsp; Doc. No. BPD-AAV2-001 Rev. 1.0</div>
+    </div>
+    <div class="doc-header-meta">
+      <div class="meta-cell">
+        <div class="meta-key">Product</div>
+        <div class="meta-val">rAAV2-hRPE65v2</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-key">Batch Scale</div>
+        <div class="meta-val">20 L STR</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-key">Yield Target</div>
+        <div class="meta-val">~3,000 doses/batch</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-key">Indication</div>
+        <div class="meta-val">LCA (RPE65)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CONTROL BAR ═══════ -->
+<div class="control-bar">
+  <div class="cb-section">
+    <span class="cb-label">View</span>
+    <div class="view-tabs" id="main-view-tabs">
+      <button class="view-tab active" onclick="setMainView('executive')">Executive</button>
+      <button class="view-tab" onclick="setMainView('engineering')">Engineering</button>
+      <button class="view-tab" onclick="setMainView('full')">Full Detail</button>
+    </div>
+  </div>
+  <div class="cb-section">
+    <span class="cb-label">Phases</span>
+    <button class="cb-btn" onclick="expandAllPhases()">Expand All</button>
+    <button class="cb-btn" onclick="collapseAllPhases()">Collapse All</button>
+  </div>
+  <div class="cb-section">
+    <span class="cb-label">Steps</span>
+    <button class="cb-btn" onclick="expandAllSteps()">Expand All</button>
+    <button class="cb-btn" onclick="collapseAllSteps()">Collapse All</button>
+  </div>
+  <div class="cb-section" style="border-right:none; margin-left:auto;">
+    <span class="cb-label">Panel</span>
+    <button class="cb-btn active" id="econ-toggle-btn" onclick="toggleEconPanel()">Cost Analysis</button>
+    <button class="cb-btn" onclick="window.print()">Print / Export</button>
+  </div>
+</div>
+
+<!-- ═══════ LEGEND BAR ═══════ -->
+<div class="legend-bar">
+  <span class="leg-title">Legend</span>
+  <div class="leg-item"><div class="leg-shape-rect" style="background:#EFF6FF;border:1.5px solid #2563EB;"></div>Process Operation</div>
+  <div class="leg-item"><div class="leg-shape-diamond" style="background:#FEF3C7;border:1.5px solid #D97706;"></div>Decision / QC Gate</div>
+  <div class="leg-item"><div class="leg-shape-para" style="background:#EFF6FF;border:1px solid #93C5FD;"></div>Input Stream</div>
+  <div class="leg-item"><div class="leg-shape-para" style="background:#F0FDF4;border:1px solid #86EFAC;"></div>Output Stream</div>
+  <div class="leg-item"><div class="leg-shape-para" style="background:#FEF2F2;border:1px solid #FECACA;"></div>Waste Stream</div>
+  <div class="leg-item"><div class="leg-shape-term" style="background:#F0FDF4;border:1.5px solid #16A34A;"></div>Start / End</div>
+  <div class="leg-item"><div class="leg-shape-rect" style="border-radius:10px;background:#F9FAFB;border:1.5px solid #9CA3AF;width:20px;"></div>Storage / Cell Bank</div>
+  <div class="leg-sep"></div>
+  <div class="leg-item"><div class="leg-shape-rect" style="background:#DBEAFE;border:1px solid #93C5FD;"></div><span style="color:#1E40AF;font-weight:600;font-size:10px;">CPP</span></div>
+  <div class="leg-item"><div class="leg-shape-rect" style="background:#DCFCE7;border:1px solid #86EFAC;"></div><span style="color:#14532D;font-weight:600;font-size:10px;">CQA</span></div>
+  <div class="leg-item"><div class="leg-shape-hex" style="background:#FEF3C7;border:1px solid #FDE68A;"></div><span style="color:#78350F;font-weight:600;font-size:10px;">PAT</span></div>
+</div>
+
+<!-- ═══════ MAIN LAYOUT ═══════ -->
+<div class="main-wrap">
+
+<!-- FLOW CANVAS -->
+<div class="flow-canvas" id="flow-canvas">
+
+<!-- ─── START ─── -->
+<div class="terminator-wrap">
+  <div class="terminator term-start">Process Start — AAV2-hRPE65v2 Biomanufacturing</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 0 — VECTOR DESIGN & CELL LINE ENGINEERING
+══════════════════════════════════════════════════════ -->
+<div class="phase-section" id="phase-ce">
+  <div class="phase-header" onclick="togglePhase('ce')">
+    <div class="phase-tag" style="background:#7C3AED;">Phase 0</div>
+    <div class="phase-title">Vector Design &amp; Cell Line Engineering</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;">CRISPR-HDR · AAVS1 · ROSA26</span>
+      <span class="phase-badge" style="background:#F0FDF4;color:#14532D;border:1px solid #BBF7D0;">One-Time Setup</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-ce">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-ce">
+
+    <!-- Input streams -->
+    <div class="connector-zone" style="min-height:20px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:8px 0;">
+        <span class="stream-chip sc-in">HEK293SF host cells (suspension-adapted)</span>
+        <span class="stream-chip sc-in">CRISPR-Cas9 / HDR plasmids (Rep/Cap/Helper/hRPE65)</span>
+        <span class="stream-chip sc-buf">Selection antibiotics (puromycin / G418)</span>
+      </div>
+    </div>
+
+    <div class="connector-zone"><div class="connector-spine" style="width:2px;margin:0 auto;background:var(--gray-300);position:relative;min-height:16px;"></div></div>
+
+    <!-- STEP P-001 -->
+    <div class="step-wrap">
+      <div class="step-card" id="step-p001" style="border-left:4px solid #7C3AED;">
+        <div class="step-header" onclick="toggleStep('p001')">
+          <div class="step-code">P-001</div>
+          <div class="step-name">Stable Genomic Integration via CRISPR-Cas9 HDR &amp; Clonal Selection</div>
+          <div class="step-type-badge" style="color:#5B21B6;">Cell Engineering</div>
+          <div class="step-chevron open" id="chev-p001">&#9660;</div>
+        </div>
+        <div class="step-body open" id="body-p001">
+          <div class="step-tabs" id="tabs-p001">
+            <button class="step-tab active" onclick="switchTab('p001','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p001','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p001','cqa')">CQAs</button>
+            <button class="step-tab" onclick="switchTab('p001','pat')">PAT</button>
+            <button class="step-tab" onclick="switchTab('p001','equip')">Equipment</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p001-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">AAVS1 Locus (Chr 19) — AAV Packaging Machinery</div>
+                <table class="param-table">
+                  <tr><td>Allele 1:</td><td>Rep68 / Rep40 + Cap2 under Tet-On 3G doxycycline-inducible promoter</td></tr>
+                  <tr><td>Allele 2:</td><td>E2A + VA RNA I + L4-22k/33k (adenoviral helper functions) under Tet-On 3G</td></tr>
+                  <tr><td>Rep toxicity control:</td><td class="val-hl">P5 promoter inactivated — eliminates E1A-driven constitutive cytotoxic Rep68 expression in HEK293</td></tr>
+                  <tr><td>Cap2 induction:</td><td>Cumate-inducible promoter — temporal decoupling of capsid from genome replication</td></tr>
+                  <tr><td>Copy numbers:</td><td class="val-ok">Rep68: 1–3 copies/genome; Rep40: 6–12 copies (optimal stoichiometry per Jalšic et al., 2023)</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">ROSA26 Locus (Chr 3) — Transgene Cassette</div>
+                <table class="param-table">
+                  <tr><td>Insert:</td><td>ITR — CMV enhancer — CbA promoter (exon 1 + intron 1) — hRPE65 cDNA — BGH polyA — ITR</td></tr>
+                  <tr><td>Cassette size:</td><td>3,896 nt (~3.9 kb); fits within 4.7 kb AAV2 capsid capacity (EMA, 2018)</td></tr>
+                  <tr><td>Promoter rationale:</td><td>CMV enhancer + CbA hybrid: stronger and more consistent long-term RPE expression than CMV alone</td></tr>
+                  <tr><td>Integrity CQA:</td><td>Sanger sequencing of full insert verifies hRPE65 cDNA free of mutations</td></tr>
+                  <tr><td>Locus rationale:</td><td>ROSA26 expressed constitutively across adult tissues; GSH site avoids insertional mutagenesis</td></tr>
+                </table>
+                <div class="detail-col-label" style="margin-top:10px;">Clone Selection Protocol</div>
+                <table class="param-table">
+                  <tr><td>Cloning:</td><td>CellCelector robotic single-cell isolation into 96-well plates</td></tr>
+                  <tr><td>Genotyping:</td><td>Junction PCR: Reaction 1 (AAVS1 5' + 3' flanks); Reaction 2 (cassette-internal primers) — separately per allele</td></tr>
+                  <tr><td>Screening criteria:</td><td class="val-hl">Shake flask induction: titer ≥5×10^10 vg/mL (ddPCR); viability ≥65% at harvest</td></tr>
+                  <tr><td>Copy number:</td><td>ddPCR confirms allele separation (no stacking); WB verifies Dox-dependent Rep only</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p001-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Rep68 isoforms only (not Rep78) — minimizes HEK293 cytotoxicity; enables viable clone generation</span>
+              <span class="tag tag-cpp">Rep68: 1–3 integrated copies; Rep40: 6–12 copies — optimal Rep:Cap stoichiometry</span>
+              <span class="tag tag-cpp">Pre-induction Rep68 mRNA leakage &lt;5% of induced level at t=0 h (go/no-go gate)</span>
+              <span class="tag tag-cpp">Shake flask induction titer ≥5×10^10 vg/mL; harvest viability ≥65% — clone advancement criteria</span>
+              <span class="tag tag-cpp">Site-specific integration only at AAVS1 and ROSA26 — no random integration (confirmed by junction PCR)</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p001-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">Transgene integrity: Sanger sequencing — hRPE65 cDNA intact and free of mutations</span>
+              <span class="tag tag-cqa">Site-specific integration confirmed: junction PCR 5' and 3' flanking arms at AAVS1 (allele 1 + 2) and ROSA26</span>
+              <span class="tag tag-cqa">Integrated copy number stability: Rep68 1–3 copies; Rep40 6–12 copies (ddPCR quantification)</span>
+              <span class="tag tag-cqa">No off-target integration: ROSA26 and AAVS1 only — verified by ddPCR and genomic sequencing</span>
+              <span class="tag tag-cqa">Leaky Rep expression: &lt;5% pre-induction (RT-ddPCR) — confirmed at cell bank qualification</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p001-pat">
+            <div class="tag-section">
+              <span class="tag tag-pat">RT-ddPCR: Pre-induction Rep68 mRNA quantification at t=0 h — go/no-go gate (&lt;5% induced level)</span>
+              <span class="tag tag-pat">ddPCR copy number: Rep68 and Rep40 copies per genome (allele-specific)</span>
+              <span class="tag tag-pat">Junction PCR: 5' and 3' flanking arms at AAVS1 and ROSA26 — confirms site-specific integration</span>
+              <span class="tag tag-pat">Western blot: Dox-induced Rep expression only (no basal Rep protein detected pre-induction)</span>
+              <span class="tag tag-pat">Sanger sequencing: Complete hRPE65 cDNA insert verification</span>
+              <span class="tag tag-pat">Small-scale induction (125 mL shake flask): ddPCR titer at 42–48 h; Vi-CELL viability assessment</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p001-equip">
+            <div class="tag-section">
+              <span class="tag tag-equip">CellCelector automated single-cell cloning system (Aviso GmbH)</span>
+              <span class="tag tag-equip">37°C CO2 incubator with orbital shaker (120 rpm)</span>
+              <span class="tag tag-equip">BioRad QX200 ddPCR system</span>
+              <span class="tag tag-equip">PCR thermocycler + gel electrophoresis (junction PCR verification)</span>
+              <span class="tag tag-equip">Vi-CELL XR cell counter (Beckman Coulter)</span>
+              <span class="tag tag-equip">Liquid nitrogen vapor-phase storage (≤−150°C) for MCB/WCB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QC Decision Gate -->
+    <div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+    <div class="decision-wrap">
+      <div class="decision-card">
+        <div class="decision-arrow-in"></div>
+        <div class="diamond-outer">
+          <div class="diamond-inner-text">
+            <div class="diamond-title">Clone QC Gate</div>
+            <div class="diamond-subtitle">Titer ≥5×10^10 vg/mL? Viability ≥65%?<br>Leaky Rep &lt;5%? Integration confirmed?</div>
+          </div>
+        </div>
+        <div class="decision-branches">
+          <div class="branch-col">
+            <div class="branch-line-v pass" style="height:14px;"></div>
+            <div class="branch-arrow-down pass"></div>
+            <div class="branch-pass">&#10003; PASS &#8594; MCB Generation</div>
+          </div>
+          <div style="flex-shrink:0;width:32px;"></div>
+          <div class="branch-col">
+            <div class="branch-line-v fail" style="height:14px;"></div>
+            <div class="branch-arrow-down fail"></div>
+            <div class="branch-fail">&#10007; FAIL &#8594; Re-screen / Re-engineer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end phase-body -->
+</div><!-- end phase-section -->
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 1 — CELL BANK PREPARATION
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-cb">
+  <div class="phase-header" onclick="togglePhase('cb')">
+    <div class="phase-tag" style="background:#374151;">Phase 1 — USP</div>
+    <div class="phase-title">Cell Bank Preparation — MCB &amp; WCB</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F9FAFB;color:#4B5563;border:1px solid #D1D5DB;">ICH Q5D Compliant</span>
+      <span class="phase-badge" style="background:#F9FAFB;color:#4B5563;border:1px solid #D1D5DB;">≤−150°C LN2 Storage</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-cb">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-cb">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-in">Selected top clonal HEK293SF producer line</span>
+        <span class="stream-chip sc-buf">HyCell TransFx-H + 10% DMSO cryoprotectant</span>
+      </div>
+    </div>
+    <div class="storage-wrap">
+      <div class="storage-card">
+        <div class="storage-title">Master Cell Bank (MCB) &#8594; Working Cell Bank (WCB)</div>
+        <div class="storage-detail">
+          MCB: ≥150 vials · ≤−150°C LN2 vapor phase · Serum-free HyCell TransFx-H · ICH Q5D compliant · GMP-certified facility<br>
+          WCB: Derived from MCB · Passage limit ≤30 from MCB vial (CPP — enforced at each expansion step) · Per-vial passage log<br>
+          MCB/WCB Release: Sterility (USP &lt;71&gt;) · Mycoplasma · Viral safety (ICH Q5A) · STR identity · Viability ≥90% post-thaw · RCA absent · Junction PCR + ddPCR copy number
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 2 — SEED EXPANSION
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-seed">
+  <div class="phase-header" onclick="togglePhase('seed')">
+    <div class="phase-tag" style="background:#0369A1;">Phase 2 — USP</div>
+    <div class="phase-title">Seed Expansion Train</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;">8–10 days</span>
+      <span class="phase-badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;">Serum-free Suspension</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-seed">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-seed">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-in">WCB vial thawed (viability ≥90% post-thaw)</span>
+        <span class="stream-chip sc-buf">HyCell TransFx-H + 4 mM L-Gln + 0.1% Kolliphor P188</span>
+        <span class="stream-chip sc-buf">5% CO2 / 95% air atmosphere</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:10px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p002" style="border-left:4px solid #0369A1;">
+        <div class="step-header" onclick="toggleStep('p002')">
+          <div class="step-code">P-002</div>
+          <div class="step-name">Progressive Seed Expansion: T-Flask &#8594; 125 mL &#8594; 500 mL &#8594; 2 L Spinner</div>
+          <div class="step-type-badge" style="color:#0369A1;">Seed Culture</div>
+          <div class="step-yield-pill" style="color:#0369A1;">Target: 2×10^6 cells/mL</div>
+          <div class="step-chevron" id="chev-p002">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p002">
+          <div class="step-tabs" id="tabs-p002">
+            <button class="step-tab active" onclick="switchTab('p002','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p002','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p002','cqa')">CQAs</button>
+            <button class="step-tab" onclick="switchTab('p002','pat')">PAT</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p002-process">
+            <div class="detail-grid-3">
+              <div>
+                <div class="detail-col-label">T-Flask &#8594; 125 mL (Day 0–4)</div>
+                <table class="param-table">
+                  <tr><td>Seeding VCD:</td><td>0.35×10^6 cells/mL</td></tr>
+                  <tr><td>Temperature:</td><td>37°C</td></tr>
+                  <tr><td>CO2:</td><td>5%</td></tr>
+                  <tr><td>Agitation:</td><td>120 rpm orbital shaker</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">500 mL Flask (Day 4–7)</div>
+                <table class="param-table">
+                  <tr><td>Seeding VCD:</td><td>0.35×10^6 cells/mL</td></tr>
+                  <tr><td>Viability check:</td><td>≥95% before transfer</td></tr>
+                  <tr><td>Passage logged:</td><td>vs WCB record</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">2 L Spinner Flask (Day 7–10)</div>
+                <table class="param-table">
+                  <tr><td>Target VCD:</td><td class="val-hl">2×10^6 cells/mL at bioreactor inoculation</td></tr>
+                  <tr><td>Target viability:</td><td class="val-ok">≥95%</td></tr>
+                  <tr><td>Rep68 leak check:</td><td class="val-hl">RT-ddPCR at end of seed train — go/no-go gate</td></tr>
+                </table>
+              </div>
+            </div>
+            <div class="annotation">Go/No-Go Gate before bioreactor inoculation: Rep68 mRNA &lt;5% of induced level (RT-ddPCR); passage number ≤30; viability ≥95%. Failure at any criterion requires thawing a new WCB vial and restarting the seed expansion train.</div>
+          </div>
+          <div class="step-tab-panel" id="tab-p002-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Seeding VCD: 0.35×10^6 cells/mL at each expansion step (Calleja et al., 2014; Jalšic et al., 2023)</span>
+              <span class="tag tag-cpp">Cell viability ≥95% at each passage prior to transfer to next vessel</span>
+              <span class="tag tag-cpp">Passage number ≤30 from MCB vial — logged at every step against WCB vial record</span>
+              <span class="tag tag-cpp">Temperature: 37°C; CO2: 5%; agitation: 120 rpm throughout seed train</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p002-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">VCD at bioreactor inoculation: 2×10^6 cells/mL (NucleoCounter at-line)</span>
+              <span class="tag tag-cqa">Viability at bioreactor inoculation: ≥95%</span>
+              <span class="tag tag-cqa">Passage number from MCB ≤30 (batch record verification)</span>
+              <span class="tag tag-cqa">Pre-induction Rep68 mRNA leakage: &lt;5% of induced level (RT-ddPCR go/no-go)</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p002-pat">
+            <div class="tag-section">
+              <span class="tag tag-pat">NucleoCounter NC-200: at-line VCD and viability at each passage (daily)</span>
+              <span class="tag tag-pat">RT-ddPCR: Rep68 mRNA pre-induction leak check at end of seed train (go/no-go decision gate)</span>
+              <span class="tag tag-pat">Vi-CELL XR: confirmatory viability measurement before bioreactor inoculation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+    <div class="decision-wrap">
+      <div class="decision-card">
+        <div class="decision-arrow-in"></div>
+        <div class="diamond-outer">
+          <div class="diamond-inner-text">
+            <div class="diamond-title">Bioreactor Inoculation Gate</div>
+            <div class="diamond-subtitle">VCD ≥2×10^6/mL? Viability ≥95%?<br>Passage ≤30? Rep leak &lt;5%?</div>
+          </div>
+        </div>
+        <div class="decision-branches">
+          <div class="branch-col">
+            <div class="branch-line-v pass" style="height:14px;"></div>
+            <div class="branch-arrow-down pass"></div>
+            <div class="branch-pass">&#10003; PASS &#8594; STR Production</div>
+          </div>
+          <div style="flex-shrink:0;width:32px;"></div>
+          <div class="branch-col">
+            <div class="branch-line-v fail" style="height:14px;"></div>
+            <div class="branch-arrow-down fail"></div>
+            <div class="branch-fail">&#10007; FAIL &#8594; Thaw new WCB vial</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 3 — STR BIOREACTOR PRODUCTION
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-str">
+  <div class="phase-header" onclick="togglePhase('str')">
+    <div class="phase-tag" style="background:#0369A1;">Phase 3 — USP</div>
+    <div class="phase-title">Stirred-Tank Bioreactor Production (10–50 L)</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;">Pall Allegro STR</span>
+      <span class="phase-badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;">Staggered Dox/Cumate Induction</span>
+      <span class="phase-badge" style="background:#DCFCE7;color:#14532D;border:1px solid #BBF7D0;">≥1×10^14 vg/L</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-str">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-str">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-in">Seed cells at 1×10^6 cells/mL (20 L working volume)</span>
+        <span class="stream-chip sc-buf">HyCell TransFx-H + BalanCD HEK293 fed-batch supplement</span>
+        <span class="stream-chip sc-in">Doxycycline 1 µg/mL (t = 0 h) — activates integrated Rep68/40 + helper genes</span>
+        <span class="stream-chip sc-in">Cumate 30 µg/mL (t + 8 h) — activates integrated Cap2 expression</span>
+        <span class="stream-chip sc-buf">Na2CO3 / NaHCO3 (automated pH correction to 7.15)</span>
+        <span class="stream-chip sc-buf">O2/CO2 sparge blend (0.1–0.5 vvm)</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:10px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p003" style="border-left:4px solid #0369A1;">
+        <div class="step-header" onclick="toggleStep('p003')">
+          <div class="step-code">P-003</div>
+          <div class="step-name">Production Culture &amp; Staggered Induction Protocol (Doxycycline + Cumate)</div>
+          <div class="step-type-badge" style="color:#0369A1;">Upstream Production</div>
+          <div class="step-yield-pill" style="color:#15803D;">≥1×10^14 vg/L crude</div>
+          <div class="step-chevron" id="chev-p003">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p003">
+          <div class="step-tabs" id="tabs-p003">
+            <button class="step-tab active" onclick="switchTab('p003','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p003','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p003','cqa')">CQAs</button>
+            <button class="step-tab" onclick="switchTab('p003','pat')">PAT</button>
+            <button class="step-tab" onclick="switchTab('p003','equip')">Equipment</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p003-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">Culture Parameters</div>
+                <table class="param-table">
+                  <tr><td>Seeding:</td><td>1×10^6 cells/mL; 20 L working volume</td></tr>
+                  <tr><td>Temperature:</td><td class="val-hl">37°C &#8594; 35°C shift at 24 h post-induction (extends peak viability by 12–24 h)</td></tr>
+                  <tr><td>pH:</td><td class="val-hl">7.15 ± 0.1 (CPP — automated Na2CO3/NaHCO3 correction)</td></tr>
+                  <tr><td>Dissolved oxygen:</td><td class="val-hl">≥40% saturation (CPP — O2/CO2 sparging at 0.1–0.5 vvm)</td></tr>
+                  <tr><td>Induction target VCD:</td><td>5–10×10^6 cells/mL; viability &gt;90%</td></tr>
+                  <tr><td>Fed-batch:</td><td>BalanCD HEK293 supplement at 2–5×10^6 cells/mL &#8594; 3–8× titer increase (Leong et al., 2023)</td></tr>
+                  <tr><td>Harvest window:</td><td class="val-hl">42–48 h post-induction (peak titer); viability 65–75% expected</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Staggered Induction Protocol (Novel Feature)</div>
+                <table class="param-table">
+                  <tr><td>t = 0 h:</td><td class="val-hl">Doxycycline 1 µg/mL &#8594; activates Rep68/40 + adenoviral helpers (GENOME REPLICATION PHASE begins)</td></tr>
+                  <tr><td>t + 8 h:</td><td class="val-hl">Cumate 30 µg/mL &#8594; activates Cap2 expression (CAPSID ASSEMBLY PHASE begins)</td></tr>
+                  <tr><td>Scientific rationale:</td><td class="val-ok">Temporal decoupling: genomes accumulate BEFORE capsid assembly &#8594; 2–4× higher full:empty ratio; 2–4× titer improvement vs simultaneous induction (Lu et al., 2023)</td></tr>
+                  <tr><td>Novelty:</td><td class="val-ok">PLASMID-FREE production — all AAV components (Rep68/40, Cap2, helper genes, hRPE65 cassette) are stably integrated in the cell genome. Zero GMP plasmids required per production batch.</td></tr>
+                  <tr><td>Expected titer:</td><td class="val-ok">≥1×10^14 vg/L crude (20 L = 2×10^15 vg total batch input)</td></tr>
+                  <tr><td>vs Luxturna:</td><td class="val-ok">100–1,000× higher titer than roller-bottle triple-plasmid transfection (10^11–10^12 vg/L)</td></tr>
+                </table>
+                <div class="annotation" style="margin-top:8px;">Novelty: No published GMP or regulatory documentation demonstrates AAV2-RPE65 production in stable inducible HEK293SF lines. This staggered induction approach for this specific vector/disease combination constitutes the core design innovation of this project (High et al., 2025; Jalšic et al., 2023).</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p003-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Doxycycline concentration: 1 µg/mL administered at t = 0 h (activates Rep68/40 and adenoviral helper genes)</span>
+              <span class="tag tag-cpp">Cumate concentration: 30 µg/mL administered at t + 8 h (activates Cap2; 8 h delay is critical process parameter)</span>
+              <span class="tag tag-cpp">Dissolved oxygen: ≥40% saturation throughout production (inline electrochemical probe)</span>
+              <span class="tag tag-cpp">pH: 7.15 ± 0.1 (automated base addition; deviation triggers alarm)</span>
+              <span class="tag tag-cpp">Temperature: 37°C during culture; shift to 35°C at t + 24 h post-induction</span>
+              <span class="tag tag-cpp">Induction VCD: 5–10×10^6 cells/mL; viability &gt;90% — go/no-go before adding inducers</span>
+              <span class="tag tag-cpp">Harvest time: 42–48 h post-induction (at peak titer as confirmed by daily ddPCR monitoring)</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p003-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">Crude harvest genome titer: ≥1×10^13 vg/mL (ddPCR at-line daily from 24 h post-induction)</span>
+              <span class="tag tag-cqa">Cell viability at harvest: 65–75% (acceptable range; below 65% indicates excessive Rep toxicity — investigate induction delay)</span>
+              <span class="tag tag-cqa">Full:empty capsid ratio (upstream indicator): DLS monodisperse profile at harvest &lt;200 nm aggregates</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p003-pat">
+            <div class="tag-section">
+              <span class="tag tag-pat">Aber Futura capacitance probe (inline, continuous): real-time viable cell density and viability throughout production run</span>
+              <span class="tag tag-pat">Inline pH and dissolved oxygen electrochemical probes (continuous, alarm-linked to automated control loops)</span>
+              <span class="tag tag-pat">Inline temperature probe (continuous; shift to 35°C at t+24h post-induction)</span>
+              <span class="tag tag-pat">At-line ddPCR (daily from t+24h): crude genome titer trajectory — determines optimal harvest time (42 vs 48 h)</span>
+              <span class="tag tag-pat">At-line AAV2 ELISA (Progen, daily): total capsid titer — enables full:empty ratio estimation with ddPCR</span>
+              <span class="tag tag-pat">At-line NucleoCounter / Vi-CELL (every 8 h post-induction): viability monitoring</span>
+              <span class="tag tag-pat">AI-assisted soft-sensor model: real-time titer and capsid integrity prediction from inline process variables</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p003-equip">
+            <div class="tag-section">
+              <span class="tag tag-equip">Pall Allegro STR (single-use, 10–2000 L scalable; bottom-mounted 45° elephant ear impeller; validated scale-up from 50 to 2000 L)</span>
+              <span class="tag tag-equip">Aber Futura capacitance probe (inline viable cell density/viability)</span>
+              <span class="tag tag-equip">Inline pH and DO electrochemical sensors with automated control loops</span>
+              <span class="tag tag-equip">BioRad QX200 ddPCR system (at-line titer monitoring)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 4 — HARVEST & CLARIFICATION
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-harv">
+  <div class="phase-header" onclick="togglePhase('harv')">
+    <div class="phase-tag" style="background:#047857;">Phase 4 — DSP</div>
+    <div class="phase-title">Harvest &amp; Clarification</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F0FDF4;color:#047857;border:1px solid #6EE7B7;">Chemical Lysis</span>
+      <span class="phase-badge" style="background:#F0FDF4;color:#047857;border:1px solid #6EE7B7;">Benzonase Treatment</span>
+      <span class="phase-badge" style="background:#DCFCE7;color:#14532D;border:1px solid #BBF7D0;">~85–90% recovery</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-harv">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-harv">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-out">Cell broth (conditioned media + cell pellet — combined harvest)</span>
+        <span class="stream-chip sc-in">Lysis buffer: 500 mM NaCl + 0.5% Triton X-100</span>
+        <span class="stream-chip sc-in">Benzonase: 50 U/mL (Salt-Tolerant, Sigma-Aldrich)</span>
+        <span class="stream-chip sc-in">MgSO4 37.5 mM (enzyme cofactor)</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:10px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p004" style="border-left:4px solid #047857;">
+        <div class="step-header" onclick="toggleStep('p004')">
+          <div class="step-code">P-004</div>
+          <div class="step-name">Chemical Lysis + Benzonase Nuclease Treatment + Two-Stage Depth Filtration</div>
+          <div class="step-type-badge" style="color:#047857;">Harvest / Clarification</div>
+          <div class="step-yield-pill" style="color:#15803D;">~1.7×10^15 vg</div>
+          <div class="step-chevron" id="chev-p004">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p004">
+          <div class="step-tabs" id="tabs-p004">
+            <button class="step-tab active" onclick="switchTab('p004','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p004','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p004','cqa')">CQAs</button>
+            <button class="step-tab" onclick="switchTab('p004','pat')">PAT</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p004-process">
+            <div class="detail-grid-3">
+              <div>
+                <div class="detail-col-label">a) Chemical Lysis</div>
+                <table class="param-table">
+                  <tr><td>Lysis buffer:</td><td class="val-hl">500 mM NaCl + 0.5% Triton X-100</td></tr>
+                  <tr><td>Harvest pooling:</td><td>Cell pellet (intracellular) + conditioned media (secreted AAV) — combined to maximize total yield</td></tr>
+                  <tr><td>REACH note:</td><td class="val-warn">Triton X-100 restricted under EU REACH regulation post-2021. Detergent comparability study planned: polysorbate 20 / Deviron C16 alternative (37% higher AAV5 titer at 500 mM NaCl with Deviron C16; Sigma-Aldrich application note)</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">b) Benzonase Nuclease Treatment</div>
+                <table class="param-table">
+                  <tr><td>Dose:</td><td class="val-hl">50 U/mL Salt-Tolerant Benzonase (active at ≥500 mM NaCl; &gt;90% activity)</td></tr>
+                  <tr><td>Conditions:</td><td>37°C; 1 h contact time (CPP)</td></tr>
+                  <tr><td>vs Luxturna:</td><td class="val-ok">1 h digestion (reduced from 2 h) — plasmid-free system carries far lower nucleic acid burden; only 1 plasmid vs 3 in transient process</td></tr>
+                  <tr><td>MgSO4:</td><td>37.5 mM — enzyme cofactor + prevents AAV aggregation with negatively charged debris released during lysis (per Lecture 7 / Sigma-Aldrich technical guide)</td></tr>
+                  <tr><td>DNA target:</td><td>Fragments &lt;200 bp; residual DNA ≤10 ng/dose</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">c) Two-Stage Depth Filtration</div>
+                <table class="param-table">
+                  <tr><td>Stage 1:</td><td>0.55–9 µm depth filter; 170 L/m² loading (Sartorius Sartopore or Repligen KrosFlo TFDF)</td></tr>
+                  <tr><td>Stage 2:</td><td>0.1–0.8 µm secondary filter</td></tr>
+                  <tr><td>Turbidity gate:</td><td class="val-hl">&lt;5 NTU post-filtration confirmed by nephelometry before advancing to TFF</td></tr>
+                  <tr><td>HCP reduction:</td><td>~10-fold reduction achieved at clarification stage</td></tr>
+                </table>
+                <div style="margin-top:8px;">
+                  <div class="tag tag-waste">WASTE: Cell debris, filter cake, digested nucleic acid fragments</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p004-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Benzonase concentration: 50 U/mL (Salt-Tolerant); contact time: 1 h; temperature: 37°C</span>
+              <span class="tag tag-cpp">MgSO4 concentration: 37.5 mM (enzyme cofactor — minimum 2 mM required; 37.5 mM avoids AAV aggregation at high salt)</span>
+              <span class="tag tag-cpp">Lysis buffer: 500 mM NaCl + 0.5% Triton X-100 (REACH comparability study ongoing)</span>
+              <span class="tag tag-cpp">Depth filter loading: 170 L/m²; pore size cascade 0.55–9 µm (Stage 1); 0.1–0.8 µm (Stage 2)</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p004-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">Residual host cell DNA: ≤10 ng/dose; fragments &lt;200 bp (FDA/WHO specification)</span>
+              <span class="tag tag-cqa">Post-filtration turbidity: &lt;5 NTU (confirms chromatography readiness)</span>
+              <span class="tag tag-cqa">Capsid recovery: ~90% through clarification steps</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p004-pat">
+            <div class="tag-section">
+              <span class="tag tag-pat">qPCR (at-line): residual host cell DNA quantification after Benzonase treatment — ≤10 ng/dose target</span>
+              <span class="tag tag-pat">Nephelometry (at-line): BMG LABTECH NEPHELOstar Plus — post-depth filtration turbidity &lt;5 NTU gate</span>
+              <span class="tag tag-pat">ddPCR (at-line): step yield — genome-containing capsid recovery ≥90% through clarification</span>
+              <span class="tag tag-pat">DLS (at-line): particle size distribution — confirms no gross aggregation before TFF loading</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="connector-zone" style="min-height:10px;justify-content:center;">
+      <div class="hold-point">HP-001: Post-filtration turbidity &lt;5 NTU confirmed. Proceed to TFF concentration.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 5 — DOWNSTREAM PROCESSING
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-dsp">
+  <div class="phase-header" onclick="togglePhase('dsp')">
+    <div class="phase-tag" style="background:#047857;">Phase 5 — DSP</div>
+    <div class="phase-title">Downstream Processing — Purification Train</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F0FDF4;color:#047857;border:1px solid #6EE7B7;">TFF &#8594; AEX &#8594; Ultracentrifugation &#8594; Polishing</span>
+      <span class="phase-badge" style="background:#DCFCE7;color:#14532D;border:1px solid #BBF7D0;">~50% overall DSP recovery</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-dsp">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-dsp">
+
+    <!-- P-005: TFF #1 -->
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-out">Clarified harvest (turbidity &lt;5 NTU)</span>
+        <span class="stream-chip sc-buf">Diafiltration buffer: 20 mM Tris, 100–150 mM NaCl, pH 7.5</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p005" style="border-left:4px solid #047857;">
+        <div class="step-header" onclick="toggleStep('p005')">
+          <div class="step-code">P-005</div>
+          <div class="step-name">TFF Step 1 — Concentration &amp; Diafiltration (AEX Load Buffer Exchange)</div>
+          <div class="step-type-badge" style="color:#047857;">Ultrafiltration</div>
+          <div class="step-yield-pill" style="color:#15803D;">~1.5×10^15 vg (~90%)</div>
+          <div class="step-chevron" id="chev-p005">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p005">
+          <div class="step-tabs" id="tabs-p005">
+            <button class="step-tab active" onclick="switchTab('p005','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p005','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p005','cqa')">CQAs / PAT</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p005-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">Ultrafiltration Parameters</div>
+                <table class="param-table">
+                  <tr><td>Membrane:</td><td>100–300 kDa MWCO hollow-fiber cartridge (GE Pellicon 3)</td></tr>
+                  <tr><td>TMP:</td><td class="val-hl">15–20 psi (CPP)</td></tr>
+                  <tr><td>Concentration factor:</td><td>5–10× volume reduction</td></tr>
+                  <tr><td>Diafiltration volumes:</td><td>3–6 volumes into Tris/NaCl load buffer</td></tr>
+                  <tr><td>Load conductivity:</td><td class="val-hl">Confirmed ≤5 mS/cm at-line before AEX loading (NaCl adjusted to 100–150 mM — critical for AEX binding)</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Streams</div>
+                <table class="param-table">
+                  <tr><td>RETENTATE:</td><td class="val-hl">AAV2 capsids in 20 mM Tris, 100–150 mM NaCl, pH 7.5 (AEX load buffer)</td></tr>
+                  <tr><td>PERMEATE (waste):</td><td>HCP, small DNA fragments, media components, low-MW impurities</td></tr>
+                </table>
+                <div class="tag tag-waste" style="margin-top:8px;">WASTE (permeate): HCP, small DNA/RNA, media components, low-MW impurities</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p005-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Transmembrane pressure: 15–20 psi (prevents capsid aggregation from excessive shear)</span>
+              <span class="tag tag-cpp">Diafiltration volumes: 3–6 volumes; final buffer conductivity ≤5 mS/cm before AEX load</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p005-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">Capsid recovery ≥90% (ddPCR: retentate + permeate samples)</span>
+              <span class="tag tag-cqa">Load conductivity ≤5 mS/cm (conductivity meter, at-line)</span>
+              <span class="tag tag-pat">ddPCR: step yield (retentate + permeate); TCID50 infectious titer recovery</span>
+              <span class="tag tag-pat">Conductivity meter: confirm ≤5 mS/cm before AEX load (go/no-go)</span>
+              <span class="tag tag-pat">DLS: no aggregation peaks &gt;200 nm</span>
+            </div>
+            <div class="hold-point" style="margin-top:8px;">HP-002: Conductivity ≤5 mS/cm confirmed. Capsid recovery ≥90%. Proceed to AEX.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-006: AEX -->
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:4px 0;">
+        <span class="stream-chip sc-out">TFF-1 retentate (AAV2 in load buffer)</span>
+        <span class="stream-chip sc-buf">Equilibration: 20 mM Tris, 50 mM NaCl, pH 7.5</span>
+        <span class="stream-chip sc-buf">Wash: 20 mM Tris, 150 mM NaCl, pH 7.5</span>
+        <span class="stream-chip sc-buf">Elution: 20 mM Tris, 300–500 mM NaCl, pH 7.5</span>
+        <span class="stream-chip sc-buf">Strip: 1 M NaCl | CIP: 0.5 M NaOH</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p006" style="border-left:4px solid #047857;">
+        <div class="step-header" onclick="toggleStep('p006')">
+          <div class="step-code">P-006</div>
+          <div class="step-name">Anion Exchange Chromatography (AEX) — HCP &amp; DNA Clearance</div>
+          <div class="step-type-badge" style="color:#047857;">Chromatography</div>
+          <div class="step-yield-pill" style="color:#15803D;">~1.2×10^15 vg (~80%)</div>
+          <div class="step-chevron" id="chev-p006">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p006">
+          <div class="step-tabs" id="tabs-p006">
+            <button class="step-tab active" onclick="switchTab('p006','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p006','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p006','cqa')">CQAs</button>
+            <button class="step-tab" onclick="switchTab('p006','pat')">PAT</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p006-process">
+            <div class="detail-grid-3">
+              <div>
+                <div class="detail-col-label">Equilibration &amp; Load</div>
+                <table class="param-table">
+                  <tr><td>Equilibration:</td><td>20 mM Tris, 50 mM NaCl, pH 7.5 (5 CV)</td></tr>
+                  <tr><td>Load pH:</td><td class="val-hl">7.5 (stable AAV2 binding; −20% peak loss at 8 h vs −59% at pH 9; Khanal et al., 2023)</td></tr>
+                  <tr><td>Load conductivity:</td><td>≤5 mS/cm (confirmed by at-line meter)</td></tr>
+                  <tr><td>Column:</td><td>HiTrap Q HP (lab) or CIMmultus QA monolith (GMP scale)</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Wash</div>
+                <table class="param-table">
+                  <tr><td>Wash buffer:</td><td class="val-hl">20 mM Tris, 150 mM NaCl, pH 7.5 (3–5 CV) — removes unbound HCP and free DNA</td></tr>
+                  <tr><td>Wash 2 (optional):</td><td>+25 mM NaCl stepwise increments if HCP breakthrough detected by at-line BCA</td></tr>
+                  <tr><td>Pool endpoint:</td><td>Guided by inline A260/A280 UV baseline return</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Elution &amp; Regeneration</div>
+                <table class="param-table">
+                  <tr><td>Elution buffer:</td><td class="val-hl">20 mM Tris, 300–500 mM NaCl, pH 7.5 (step gradient — reproducible at scale)</td></tr>
+                  <tr><td>Pool decision:</td><td>Inline A260/A280 peak shape; pool when A260/A280 ≥1.1 in collected fractions</td></tr>
+                  <tr><td>Strip:</td><td>1 M NaCl (3 CV)</td></tr>
+                  <tr><td>CIP:</td><td>0.5 M NaOH, 30 min contact time</td></tr>
+                  <tr><td>HCP clearance:</td><td class="val-ok">&gt;2 log reduction; purity ~80–85% post-AEX</td></tr>
+                </table>
+                <div class="tag tag-waste" style="margin-top:8px;">WASTE (flow-through + wash): HCP, free DNA, aggregates, media components</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p006-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Load pH: 7.5 ± 0.1 (stable AAV2 binding without capsid destabilization)</span>
+              <span class="tag tag-cpp">Load conductivity: ≤5 mS/cm (confirmed at-line before loading)</span>
+              <span class="tag tag-cpp">Wash buffer: 150 mM NaCl; elution: 300–500 mM NaCl step gradient</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p006-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">HCP: ≤1 ng/dose (at-line BCA protein assay; ELISA confirmation)</span>
+              <span class="tag tag-cqa">Residual DNA: ≤10 ng/dose (at-line Picogreen assay; qPCR confirmation)</span>
+              <span class="tag tag-cqa">VP1:VP2:VP3 ratio: ~1:1:10 (at-line SDS-PAGE silver stain)</span>
+              <span class="tag tag-cqa">Full capsid enrichment: A260/A280 ≥1.1 in elution pool</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p006-pat">
+            <div class="tag-section">
+              <span class="tag tag-pat">Inline UV A260/A280/A320 (AKTA FPLC): real-time capsid elution tracking; peak shape guides fraction pooling decision</span>
+              <span class="tag tag-pat">Inline conductivity and pressure monitors (AKTA FPLC): column integrity and gradient verification</span>
+              <span class="tag tag-pat">At-line BCA protein assay: HCP monitoring post-wash ≤1 ng/dose target</span>
+              <span class="tag tag-pat">At-line Picogreen assay: residual DNA &lt;10 ng/dose</span>
+              <span class="tag tag-pat">At-line ddPCR: step yield calculation (genome-containing capsids)</span>
+              <span class="tag tag-pat">At-line SDS-PAGE silver stain: VP1:VP2:VP3 capsid protein ratio verification</span>
+            </div>
+            <div class="hold-point" style="margin-top:8px;">HP-003: HCP ≤1 ng/dose. DNA ≤10 ng/dose. A260/A280 ≥1.1. Proceed to ultracentrifugation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QC Gate post-AEX -->
+    <div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:12px;"></div></div>
+    <div class="decision-wrap">
+      <div class="decision-card">
+        <div class="decision-arrow-in"></div>
+        <div class="diamond-outer">
+          <div class="diamond-inner-text">
+            <div class="diamond-title">AEX QC Gate (HP-003)</div>
+            <div class="diamond-subtitle">HCP ≤1 ng/dose? DNA ≤10 ng/dose?<br>A260/A280 ≥1.1 in pool?</div>
+          </div>
+        </div>
+        <div class="decision-branches">
+          <div class="branch-col">
+            <div class="branch-line-v pass" style="height:14px;"></div>
+            <div class="branch-arrow-down pass"></div>
+            <div class="branch-pass">&#10003; PASS &#8594; Ultracentrifugation</div>
+          </div>
+          <div style="flex-shrink:0;width:32px;"></div>
+          <div class="branch-col">
+            <div class="branch-line-v fail" style="height:14px;"></div>
+            <div class="branch-arrow-down fail"></div>
+            <div class="branch-fail">&#10007; FAIL &#8594; Re-chromatography / OOS Investigation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-007: Iodixanol -->
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:4px 0;">
+        <span class="stream-chip sc-out">AEX eluate pool (~80–85% purity)</span>
+        <span class="stream-chip sc-buf">Gradient layers: 15% / 25% / 40% / 60% iodixanol in PBS pH 7.3</span>
+        <span class="stream-chip sc-buf">Phenol red marker in 40% layer (visual interface identification)</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p007" style="border-left:4px solid #047857;">
+        <div class="step-header" onclick="toggleStep('p007')">
+          <div class="step-code">P-007</div>
+          <div class="step-name">Iodixanol Density Gradient Ultracentrifugation — Full/Empty Capsid Separation</div>
+          <div class="step-type-badge" style="color:#047857;">Ultracentrifugation</div>
+          <div class="step-yield-pill" style="color:#92400E;">~8.5×10^14 vg (70–75%)</div>
+          <div class="step-chevron" id="chev-p007">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p007">
+          <div class="step-tabs" id="tabs-p007">
+            <button class="step-tab active" onclick="switchTab('p007','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p007','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p007','cqa')">CQAs / PAT</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p007-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">Centrifugation Conditions</div>
+                <table class="param-table">
+                  <tr><td>Speed:</td><td class="val-hl">350,000 × g (CPP)</td></tr>
+                  <tr><td>Duration:</td><td class="val-hl">90 min (CPP)</td></tr>
+                  <tr><td>Temperature:</td><td class="val-hl">10°C (CPP)</td></tr>
+                  <tr><td>Gradient:</td><td>15% / 25% / 40% / 60% iodixanol step in PBS pH 7.3 + phenol red in 40% layer</td></tr>
+                  <tr><td>Full capsids:</td><td class="val-ok">Density 1.23–1.30 g/mL — band at 40/60% interface — COLLECT</td></tr>
+                  <tr><td>Empty capsids:</td><td class="val-warn">Density 1.15–1.23 g/mL — above 40% layer — DISCARD</td></tr>
+                  <tr><td>Collection:</td><td>40/60% interface harvested by syringe; phenol red confirms correct fraction</td></tr>
+                  <tr><td>Equipment:</td><td>Beckman Coulter Optima XL-100K; Ti-70 rotor; OptiMATE gradient maker</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Scale Considerations &amp; Limitations</div>
+                <table class="param-table">
+                  <tr><td>Throughput:</td><td class="val-warn">Multiple sequential rotor runs required at 10–50 L batch scale — total processing ~16+ hours (major process bottleneck)</td></tr>
+                  <tr><td>Scale ceiling:</td><td class="val-warn">Iodixanol ultracentrifugation not scalable beyond ~200 L. Alternative at GMP commercial scale: CIMmultus OH monolith (AEX polishing) or continuous-flow ultracentrifugation</td></tr>
+                </table>
+                <div class="tag tag-waste" style="margin-top:8px;">WASTE: Empty capsids (15/25% layers), residual HCP, iodixanol gradient solutions</div>
+                <div class="annotation warn" style="margin-top:6px;">If AUC post-purification reveals full capsid &lt;70% (full:empty &lt;2.3:1): re-evaluate staggered induction delay. Conduct DoE at 10 L scale: test 4, 6, 8, 10, 12 h Dox-to-Cumate intervals. Quantify genome replication by ddPCR at 24 h post-doxycycline (Ladiwala et al., 2025; Jalšic et al., 2023).</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p007-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Centrifugation: 350,000 × g; 90 min; 10°C</span>
+              <span class="tag tag-cpp">Gradient composition: 15% / 25% / 40% / 60% iodixanol (w/v in PBS pH 7.3)</span>
+              <span class="tag tag-cpp">Phenol red marker in 40% iodixanol layer (visual interface identification)</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p007-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">Full capsid purity ≥90% post-step (AUC — analytical ultracentrifugation)</span>
+              <span class="tag tag-cqa">Full:empty ratio ≥10:1 target (post-polishing; starting from ~5–15% full in crude harvest)</span>
+              <span class="tag tag-pat">AUC (analytical ultracentrifugation): definitive full:empty ratio determination</span>
+              <span class="tag tag-pat">TEM (transmission electron microscopy): capsid morphology and integrity; 22–25 nm diameter</span>
+              <span class="tag tag-pat">DLS (dynamic light scattering): PDI &lt;0.2; monodisperse peak post-fraction collection</span>
+            </div>
+            <div class="hold-point" style="margin-top:8px;">HP-004: Full:empty ≥10:1 confirmed by AUC. Proceed to TFF-2 polishing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-008: TFF2 + SEC -->
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:4px 0;">
+        <span class="stream-chip sc-out">Full capsid fraction from iodixanol gradient (40/60% interface)</span>
+        <span class="stream-chip sc-buf">TFF-2 diafiltration: PBS pH 7.3 → formulation buffer (180 mM NaCl, 10 mM NaPO4, 0.001% P188, pH 7.3)</span>
+        <span class="stream-chip sc-buf">SEC mobile phase: Formulation buffer (same composition)</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p008" style="border-left:4px solid #047857;">
+        <div class="step-header" onclick="toggleStep('p008')">
+          <div class="step-code">P-008</div>
+          <div class="step-name">TFF Step 2 (Iodixanol Removal) + SEC Polishing (Aggregate Removal)</div>
+          <div class="step-type-badge" style="color:#047857;">Polishing</div>
+          <div class="step-yield-pill" style="color:#15803D;">~6.9×10^15 vg (~81%)</div>
+          <div class="step-chevron" id="chev-p008">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p008">
+          <div class="step-tabs" id="tabs-p008">
+            <button class="step-tab active" onclick="switchTab('p008','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p008','cpp')">CPPs</button>
+            <button class="step-tab" onclick="switchTab('p008','cqa')">CQAs / PAT</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p008-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">a) TFF Step 2 — Iodixanol Removal + Buffer Exchange</div>
+                <table class="param-table">
+                  <tr><td>Membrane:</td><td>100 kDa MWCO hollow-fiber (preferred over flat-sheet for uniform shear distribution)</td></tr>
+                  <tr><td>TMP:</td><td class="val-hl">≤5 psi (CPP — critical: higher TMP induces AAV2 aggregation from shear forces)</td></tr>
+                  <tr><td>Diafiltration:</td><td>≥8 volumes; extend to 12 if iodixanol &gt;0.5% after 8 volumes (refractometry monitoring)</td></tr>
+                  <tr><td>RETENTATE:</td><td class="val-hl">AAV2 in final formulation buffer (180 mM NaCl, 10 mM NaPO4, 0.001% Poloxamer 188, pH 7.3)</td></tr>
+                  <tr><td>PERMEATE (waste):</td><td>Residual iodixanol, low-MW aggregates</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">b) SEC Polishing — Aggregate Removal</div>
+                <table class="param-table">
+                  <tr><td>Column:</td><td>Superdex 200 HiLoad 16/600 (Cytiva)</td></tr>
+                  <tr><td>Mobile phase:</td><td class="val-hl">Formulation buffer (180 mM NaCl, 10 mM NaPO4, 0.001% Poloxamer 188, pH 7.3)</td></tr>
+                  <tr><td>AAV2 monomer:</td><td class="val-ok">Rh ~18 nm — elutes in fractions 4–6 (monodisperse peak)</td></tr>
+                  <tr><td>Aggregates (waste):</td><td class="val-warn">High-MW &gt;50 nm — early fractions — discard</td></tr>
+                  <tr><td>Pool decision:</td><td>NTA PDI &lt;0.1 + A260/A280 ≥1.1 in collected fractions</td></tr>
+                </table>
+                <div class="tag tag-waste" style="margin-top:8px;">WASTE: Residual iodixanol, low-MW aggregates (TFF permeate); high-MW aggregates and soluble proteins (SEC excluded fractions)</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p008-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">TMP (TFF-2): ≤5 psi; feed flow rate minimized to reduce shear (critical for capsid integrity)</span>
+              <span class="tag tag-cpp">Diafiltration volumes: ≥8; target iodixanol &lt;0.5% by refractometry</span>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p008-cqa">
+            <div class="tag-section">
+              <span class="tag tag-cqa">Residual iodixanol: &lt;0.5% w/v (refractometry)</span>
+              <span class="tag tag-cqa">Aggregates: ≤2% by DLS; PDI &lt;0.1</span>
+              <span class="tag tag-cqa">A260/A280 ≥1.1 in SEC pool (full capsid confirmation)</span>
+              <span class="tag tag-pat">Refractometry: iodixanol clearance monitoring after each diafiltration cycle</span>
+              <span class="tag tag-pat">DLS: aggregate content ≤2% and PDI &lt;0.1 after TFF-2 and post-SEC</span>
+              <span class="tag tag-pat">NTA (nanoparticle tracking analysis): PDI &lt;0.1; monodisperse AAV2 monomers confirmed</span>
+              <span class="tag tag-pat">Inline A260/A280 (AKTA): SEC fraction pooling decision</span>
+            </div>
+            <div class="hold-point" style="margin-top:8px;">HP-005: Iodixanol &lt;0.5%. Aggregates ≤2%. Proceed to sterile filtration.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 6 — DS RELEASE & STERILE FILTRATION
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-ds">
+  <div class="phase-header" onclick="togglePhase('ds')">
+    <div class="phase-tag" style="background:#92400E;">Phase 6 — QC</div>
+    <div class="phase-title">Sterile Filtration &amp; Drug Substance (DS) Release</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;">0.22 µm PES</span>
+      <span class="phase-badge" style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;">Full ICH Q6B Panel</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-ds">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-ds">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-out">Polished AAV2 bulk in formulation buffer</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p009" style="border-left:4px solid #92400E;">
+        <div class="step-header" onclick="toggleStep('p009')">
+          <div class="step-code">P-009</div>
+          <div class="step-name">Sterile Filtration (0.22 µm PES) + Drug Substance Release Testing</div>
+          <div class="step-type-badge" style="color:#92400E;">QC / DS Release</div>
+          <div class="step-yield-pill" style="color:#15803D;">90–100% | ~6.5×10^14 vg DS</div>
+          <div class="step-chevron" id="chev-p009">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p009">
+          <div class="step-tabs" id="tabs-p009">
+            <button class="step-tab active" onclick="switchTab('p009','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p009','release')">DS Release Panel</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p009-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">Sterile Filtration</div>
+                <table class="param-table">
+                  <tr><td>Filter:</td><td>Sartorius Sartopore 2 — 0.22 µm PES (polyethersulfone), single-use capsule</td></tr>
+                  <tr><td>Integrity test:</td><td class="val-hl">Bubble point test pre-use AND post-use (CPP)</td></tr>
+                  <tr><td>Recovery:</td><td class="val-ok">90–100% (PES low protein binding)</td></tr>
+                  <tr><td>FILTRATE (DS):</td><td class="val-hl">Sterile AAV2 drug substance in formulation buffer</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">DS Hold &amp; Release Initiation</div>
+                <table class="param-table">
+                  <tr><td>DS hold temp:</td><td>≤−65°C (pending QP release; short-term 2–8°C up to 7 days permissible)</td></tr>
+                  <tr><td>DS release duration:</td><td class="val-warn">~14–21 days (analytical testing campaign)</td></tr>
+                  <tr><td>QP sign-off:</td><td>Required before DS advances to fill/finish</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p009-release">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">Identity, Potency &amp; Purity</div>
+                <div class="tag-section">
+                  <span class="tag tag-cqa">Genome titer: ddPCR — ≥1×10^13 vg/mL</span>
+                  <span class="tag tag-cqa">Total capsid titer: AAV2 ELISA (Progen)</span>
+                  <span class="tag tag-cqa">Full:empty ratio: AUC — ≥10:1</span>
+                  <span class="tag tag-cqa">Potency: In vitro RPE transduction; RPE65 Western blot at 48 h; ≥1 TU per 100 vg</span>
+                  <span class="tag tag-cqa">Transgene integrity: Sanger sequencing — hRPE65 cDNA intact</span>
+                  <span class="tag tag-cqa">Capsid protein ratio: SDS-PAGE silver stain — VP1:VP2:VP3 ~1:1:10</span>
+                  <span class="tag tag-cqa">Morphology: TEM — intact capsids, 22–25 nm diameter</span>
+                </div>
+              </div>
+              <div>
+                <div class="detail-col-label">Safety, Physicochemical &amp; Microbiology</div>
+                <div class="tag-section">
+                  <span class="tag tag-cqa">HCP: ELISA — ≤1 ng/dose</span>
+                  <span class="tag tag-cqa">Residual DNA: qPCR — ≤10 ng/dose; fragments &lt;200 bp</span>
+                  <span class="tag tag-cqa">Endotoxin: LAL assay — ≤1 EU/mL</span>
+                  <span class="tag tag-cqa">Sterility: USP &lt;71&gt; — no growth</span>
+                  <span class="tag tag-cqa">Mycoplasma: compendial — absent</span>
+                  <span class="tag tag-cqa">RCA: infectivity assay — replication-competent AAV absent</span>
+                  <span class="tag tag-cqa">pH: 7.3 ± 0.2</span>
+                  <span class="tag tag-cqa">Osmolality: 285–315 mOsm/kg</span>
+                  <span class="tag tag-cqa">Appearance: clear, colorless, essentially particle-free</span>
+                  <span class="tag tag-cqa">Sub-visible particles: MFI — USP &lt;787&gt;/&lt;788&gt; limits</span>
+                  <span class="tag tag-cqa">Aggregates: DLS — ≤2%; PDI &lt;0.1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:12px;"></div></div>
+    <div class="decision-wrap">
+      <div class="decision-card">
+        <div class="decision-arrow-in"></div>
+        <div class="diamond-outer">
+          <div class="diamond-inner-text">
+            <div class="diamond-title">DS Release Decision (QP Review)</div>
+            <div class="diamond-subtitle">All DS CQAs met? Batch records complete?<br>OOS: investigation &#8594; disposition decision</div>
+          </div>
+        </div>
+        <div class="decision-branches">
+          <div class="branch-col">
+            <div class="branch-line-v pass" style="height:14px;"></div>
+            <div class="branch-arrow-down pass"></div>
+            <div class="branch-pass">&#10003; RELEASE &#8594; Formulation &amp; Fill/Finish</div>
+          </div>
+          <div style="flex-shrink:0;width:32px;"></div>
+          <div class="branch-col">
+            <div class="branch-line-v fail" style="height:14px;"></div>
+            <div class="branch-arrow-down fail"></div>
+            <div class="branch-fail">&#10007; OOS &#8594; Investigate / Reject</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 7 — FORMULATION & FILL/FINISH
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-ff">
+  <div class="phase-header" onclick="togglePhase('ff')">
+    <div class="phase-tag" style="background:#5B21B6;">Phase 7 — F/F</div>
+    <div class="phase-title">Drug Product Formulation &amp; Aseptic Fill/Finish</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;">ISO 5/7 GMP Suite</span>
+      <span class="phase-badge" style="background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;">5×10^12 vg/mL target</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-ff">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-ff">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-out">Released DS bulk</span>
+        <span class="stream-chip sc-buf">DP buffer: 180 mM NaCl + 10 mM NaPO4 + 0.001% Poloxamer 188 + WFI, pH 7.3</span>
+        <span class="stream-chip sc-in">Type I borosilicate 2 mL glass vials (gamma-irradiated)</span>
+        <span class="stream-chip sc-in">Chlorobutyl rubber stoppers (gamma-irradiated, endotoxin-tested)</span>
+        <span class="stream-chip sc-buf">Nitrogen gas (inert atmosphere overlay at stoppering)</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p010" style="border-left:4px solid #5B21B6;">
+        <div class="step-header" onclick="toggleStep('p010')">
+          <div class="step-code">P-010</div>
+          <div class="step-name">Drug Product Formulation + Aseptic Fill (0.5 mL per Type I Glass Vial)</div>
+          <div class="step-type-badge" style="color:#5B21B6;">Fill / Finish</div>
+          <div class="step-chevron" id="chev-p010">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p010">
+          <div class="step-tabs" id="tabs-p010">
+            <button class="step-tab active" onclick="switchTab('p010','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p010','cpp')">CPPs / CQAs</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p010-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">Formulation</div>
+                <table class="param-table">
+                  <tr><td>Target concentration:</td><td class="val-hl">5×10^12 vg/mL (0.05 mg vector/mL) — identical to Luxturna (ICH Q5E comparability basis)</td></tr>
+                  <tr><td>Buffer composition:</td><td>180 mM NaCl + 10 mM sodium phosphate + 0.001% Poloxamer 188 + WFI, pH 7.3</td></tr>
+                  <tr><td>Poloxamer 188:</td><td class="val-ok">0.001% — surfactant prevents surface adsorption losses; provides cryo-protection during ≤−65°C storage</td></tr>
+                  <tr><td>Clinical dose:</td><td>1.5×10^11 vg per eye in 0.3 mL subretinal injection — after 1:10 on-site dilution from 0.5 mL/vial</td></tr>
+                  <tr><td>Stability validation:</td><td>Freeze-thaw: 3 cycles −65°C to +25°C; accelerated at −20°C and 2–8°C for shelf-life derivation</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Aseptic Fill/Finish</div>
+                <table class="param-table">
+                  <tr><td>Container:</td><td class="val-hl">2 mL Type I borosilicate glass vial (single-dose)</td></tr>
+                  <tr><td>Fill volume:</td><td class="val-hl">0.5 mL drug product per vial</td></tr>
+                  <tr><td>Stopper:</td><td>Chlorobutyl rubber (gamma-irradiated, endotoxin-tested; West Pharmaceutical)</td></tr>
+                  <tr><td>Atmosphere:</td><td>Nitrogen overlay at stoppering (oxidation prevention)</td></tr>
+                  <tr><td>Crimp seal:</td><td>Aluminum flip-off (validated torque specification)</td></tr>
+                  <tr><td>Fill environment:</td><td>ISO 5 laminar airflow within ISO 7 filling suite (Grade A/B GMP)</td></tr>
+                  <tr><td>Fill accuracy:</td><td>100% gravimetric IPC (automated balance); target ±2% of nominal fill weight</td></tr>
+                  <tr><td>Storage:</td><td>≤−65°C; 21-month shelf life validated (Daily Med, 2022; EMA, 2018)</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p010-cpp">
+            <div class="tag-section">
+              <span class="tag tag-cpp">Fill volume: 0.5 mL ±2%; N2 overlay; stopper seating torque (validated specification)</span>
+              <span class="tag tag-cpp">ISO 5 environment during fill: particle count and bioburden per-session monitoring</span>
+              <span class="tag tag-cqa">Target: 5×10^12 ±20% vg/mL (ddPCR verification post-formulation)</span>
+              <span class="tag tag-cqa">Appearance: clear, colorless (visual / automated visual inspection — AVI)</span>
+              <span class="tag tag-cqa">Container closure integrity (CCI): 100% tested by automated system</span>
+              <span class="tag tag-pat">ddPCR: final DP titer 5×10^12 ±20% vg/mL</span>
+              <span class="tag tag-pat">100% gravimetric IPC (fill weight ±2%)</span>
+              <span class="tag tag-pat">pH meter + osmometer: 7.3±0.2; 285–315 mOsm/kg</span>
+              <span class="tag tag-pat">Environmental monitoring: particle count + bioburden per fill session (ISO 5)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PHASE 8 — DP RELEASE & DISTRIBUTION
+══════════════════════════════════════════════════════ -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+
+<div class="phase-section" id="phase-rel">
+  <div class="phase-header" onclick="togglePhase('rel')">
+    <div class="phase-tag" style="background:#92400E;">Phase 8 — Release</div>
+    <div class="phase-title">100% Inspection, DP Release Testing, QP Lot Release &amp; GDP Distribution</div>
+    <div class="phase-meta">
+      <span class="phase-badge" style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;">ICH Q5E Comparability</span>
+      <span class="phase-badge" style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;">≤−65°C Cold Chain</span>
+    </div>
+    <div class="phase-chevron open" id="chev-phase-rel">&#9660;</div>
+  </div>
+  <div class="phase-body" id="body-phase-rel">
+    <div class="connector-zone" style="min-height:16px;justify-content:center;">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 0;">
+        <span class="stream-chip sc-out">Filled and stoppered vials (post fill/finish)</span>
+      </div>
+    </div>
+    <div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:8px;"></div>
+    <div class="step-wrap">
+      <div class="step-card" id="step-p011" style="border-left:4px solid #92400E;">
+        <div class="step-header" onclick="toggleStep('p011')">
+          <div class="step-code">P-011</div>
+          <div class="step-name">Visual Inspection + DP Release Testing + QP Lot Release + Labelling + GDP Distribution</div>
+          <div class="step-type-badge" style="color:#92400E;">QC / Release</div>
+          <div class="step-chevron" id="chev-p011">&#9660;</div>
+        </div>
+        <div class="step-body" id="body-p011">
+          <div class="step-tabs" id="tabs-p011">
+            <button class="step-tab active" onclick="switchTab('p011','process')">Process</button>
+            <button class="step-tab" onclick="switchTab('p011','release')">DP Release Panel</button>
+            <button class="step-tab" onclick="switchTab('p011','reg')">Regulatory</button>
+          </div>
+          <div class="step-tab-panel active" id="tab-p011-process">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-col-label">100% Visual Inspection</div>
+                <table class="param-table">
+                  <tr><td>Method:</td><td>Automated visual inspection (AVI) — 100% of filled vials</td></tr>
+                  <tr><td>Parameters:</td><td>Visible particles; fill level; stopper seating; crimp integrity; container defects</td></tr>
+                  <tr><td>Sub-visible:</td><td>MFI (micro-flow imaging) on representative samples — USP &lt;787&gt;/&lt;788&gt;</td></tr>
+                  <tr><td>Reject disposition:</td><td>Failed vials quarantined; investigation per SOPs</td></tr>
+                </table>
+                <div class="detail-col-label" style="margin-top:10px;">Labelling &amp; Packaging</div>
+                <table class="param-table">
+                  <tr><td>Primary label:</td><td>Product name, lot number, titer, fill volume, storage condition (≤−65°C), expiry, patient-specific traceability (orphan ATMP)</td></tr>
+                  <tr><td>Secondary pkg:</td><td>Individual carton + package insert + diluent vial (co-packaged)</td></tr>
+                  <tr><td>Serialization:</td><td>Lot-level serialization; 30-year traceability retention (EU GMP Annex 16)</td></tr>
+                </table>
+              </div>
+              <div>
+                <div class="detail-col-label">Cold-Chain &amp; Distribution</div>
+                <table class="param-table">
+                  <tr><td>Storage:</td><td class="val-hl">≤−65°C; 21-month shelf life validated at ≤−65°C (Daily Med, 2022; EMA, 2018)</td></tr>
+                  <tr><td>Transit temp:</td><td>2–8°C for up to 14 days (transport to clinical site; diluent only at ambient)</td></tr>
+                  <tr><td>Cold-chain:</td><td>Validated dry ice shipper (≥72 h at ≤−65°C) per GDP guidelines</td></tr>
+                  <tr><td>Temp logger:</td><td>Calibrated data logger in every shipment</td></tr>
+                  <tr><td>QP release:</td><td>Certificate of Analysis issued per lot; QP signature required before distribution</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p011-release">
+            <div class="detail-grid">
+              <div>
+                <div class="tag-section">
+                  <span class="tag tag-cqa">Genome titer: ddPCR — 5×10^12 ±20% vg/mL</span>
+                  <span class="tag tag-cqa">Full:empty: AUC — ≥10:1</span>
+                  <span class="tag tag-cqa">Potency: RPE65 transduction + Western blot (representative retest per lot)</span>
+                  <span class="tag tag-cqa">Sterility: USP &lt;71&gt;</span>
+                  <span class="tag tag-cqa">Endotoxin: LAL ≤1 EU/mL</span>
+                  <span class="tag tag-cqa">pH: 7.3 ± 0.2</span>
+                  <span class="tag tag-cqa">Osmolality: 285–315 mOsm/kg</span>
+                  <span class="tag tag-cqa">Sub-visible particles: MFI — USP &lt;787&gt;/&lt;788&gt;</span>
+                  <span class="tag tag-cqa">CCI: container closure integrity 100%</span>
+                  <span class="tag tag-cqa">Batch records: QP review complete</span>
+                </div>
+              </div>
+              <div>
+                <div class="tag-section">
+                  <span class="tag tag-pat">AVI: 100% automated visual inspection</span>
+                  <span class="tag tag-pat">MFI: sub-visible particulates representative sample</span>
+                  <span class="tag tag-pat">ddPCR: final DP titer confirmation</span>
+                  <span class="tag tag-pat">AUC: full:empty ratio ≥10:1</span>
+                  <span class="tag tag-pat">Potency assay: in vitro RPE cell transduction + RPE65 Western blot</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="step-tab-panel" id="tab-p011-reg">
+            <div class="detail-col-label">Regulatory Framework</div>
+            <div class="annotation">
+              ICH Q5E Comparability dossier submitted to Health Canada / FDA / EMA comparing DS and DP quality attributes against Luxturna (voretigene neparvovec) reference product. Identical transgene cassette, formulation (180 mM NaCl, 10 mM NaPO4, 0.001% Poloxamer 188, pH 7.3), dose (1.5×10^11 vg/eye), and subretinal route of administration. Regulatory advantage: existing Luxturna clinical and safety data substantiates bridging study approach rather than full clinical program. Manufacturing platform novelty (stable inducible cell line vs transient transfection) is the primary CMC differentiator, triggering comparability requirement under ICH Q5E. Applicable regulations: ICH Q5A (viral safety), ICH Q5D (cell substrates), ICH Q6B (biologics specifications), ICH Q1A (stability), EU GMP Annex 13 (ATMPs), Health Canada NDS, FDA IND, EMA CTA.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final QP Gate -->
+    <div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:12px;"></div></div>
+    <div class="decision-wrap">
+      <div class="decision-card">
+        <div class="decision-arrow-in"></div>
+        <div class="diamond-outer">
+          <div class="diamond-inner-text">
+            <div class="diamond-title">QP Batch Release Decision</div>
+            <div class="diamond-subtitle">All DP CQAs met? Batch records complete?<br>ICH Q5E comparability data acceptable?</div>
+          </div>
+        </div>
+        <div class="decision-branches">
+          <div class="branch-col">
+            <div class="branch-line-v pass" style="height:14px;"></div>
+            <div class="branch-arrow-down pass"></div>
+            <div class="branch-pass">&#10003; QP RELEASE &#8594; Cold-Chain Distribution</div>
+          </div>
+          <div style="flex-shrink:0;width:32px;"></div>
+          <div class="branch-col">
+            <div class="branch-line-v fail" style="height:14px;"></div>
+            <div class="branch-arrow-down fail"></div>
+            <div class="branch-fail">&#10007; OOS / Deviation &#8594; Investigation &#8594; Reject</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── END ─── -->
+<div class="connector-zone"><div style="width:2px;background:var(--gray-300);margin:0 auto;min-height:14px;"></div></div>
+<div class="terminator-wrap">
+  <div class="terminator term-end">Process Complete — rAAV2-hRPE65v2 Drug Product Released for Subretinal Administration</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     YIELD SUMMARY TABLE
+═══════════════════════════════════════════════════════ -->
+<div class="yield-section">
+  <div class="yield-section-header">Process Mass Balance — Yield &amp; Recovery Per Step (20 L STR Batch | Crude Input: 2×10^15 vg)</div>
+  <table class="yield-table">
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th>Unit Operation</th>
+        <th>Step Recovery</th>
+        <th>Cumulative vg Yield</th>
+        <th>Key Buffers — Retentate / Eluate / Wash / Waste</th>
+        <th>Equipment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="yl">Bioreactor harvest</td><td>P-003 — 42–48 h post-induction (20 L STR)</td><td class="yl">Input</td><td class="yl">2×10^15 vg crude</td><td>Media: HyCell TransFx-H + BalanCD; Inducers: Dox 1 µg/mL (t=0h) + Cumate 30 µg/mL (t+8h). No plasmids — all production genes are stably integrated.</td><td>Pall Allegro STR; Aber Futura; inline pH/DO sensors</td></tr>
+      <tr><td>Lysis + Benzonase</td><td>P-004a/b — chemical lysis + nuclease treatment</td><td class="yl">~95%</td><td class="yl">~1.9×10^15</td><td>Lysis: 500 mM NaCl + 0.5% Triton X-100; Benzonase 50 U/mL + MgSO4 37.5 mM; Waste: digested nucleic acids, debris</td><td>Temperature-controlled mixing vessel</td></tr>
+      <tr><td>Depth filtration</td><td>P-004c — two-stage clarification</td><td class="yl">~90%</td><td class="yl">~1.7×10^15</td><td>Feed: lysate; Filtrate: clarified harvest (product); Waste: cell debris, filter cake</td><td>Sartorius Sartopore 2; Repligen KrosFlo TFDF</td></tr>
+      <tr><td>TFF Step 1</td><td>P-005 — concentration + diafiltration</td><td class="yl">~90%</td><td class="yl">~1.5×10^15</td><td>Retentate: AAV2 in 20 mM Tris, 100–150 mM NaCl, pH 7.5 (AEX load buffer); Permeate/waste: HCP, media components</td><td>GE Pellicon 3 (100–300 kDa MWCO hollow-fiber)</td></tr>
+      <tr><td>AEX</td><td>P-006 — HCP and DNA clearance</td><td class="yw">~80%</td><td class="yl">~1.2×10^15</td><td>Equilibration: 20 mM Tris, 50 mM NaCl pH 7.5 (5 CV); Wash: 20 mM Tris, 150 mM NaCl pH 7.5; Eluate: 20 mM Tris, 300–500 mM NaCl pH 7.5; Strip: 1 M NaCl; CIP: 0.5 M NaOH; Flow-through/waste: HCP, DNA, aggregates</td><td>AKTA FPLC; HiTrap Q HP or CIMmultus QA monolith</td></tr>
+      <tr><td>Ultracentrifugation</td><td>P-007 — full/empty capsid separation</td><td class="yw">70–75%</td><td class="yl">~8.5×10^14</td><td>Gradient: 15%/25%/40%/60% iodixanol in PBS pH 7.3 (+ phenol red in 40% layer); Collect: 40/60% interface (full capsids 1.23–1.30 g/mL); Waste: empty capsids, iodixanol solutions, residual HCP</td><td>Beckman Optima XL-100K; Ti-70 rotor; OptiMATE gradient maker</td></tr>
+      <tr><td>TFF Step 2 + SEC</td><td>P-008 — iodixanol removal + aggregate polishing</td><td class="yl">~81% combined</td><td class="yl">~6.9×10^14</td><td>TFF-2: PBS pH 7.3 → formulation buffer (180 mM NaCl, 10 mM NaPO4, 0.001% P188, pH 7.3); Permeate/waste: iodixanol, aggregates; SEC mobile phase: formulation buffer; SEC waste: high-MW aggregates, soluble proteins</td><td>GE Pellicon 3 (100 kDa MWCO); Superdex 200 HiLoad; AKTA FPLC; Malvern Zetasizer</td></tr>
+      <tr><td>Sterile filtration</td><td>P-009a — 0.22 µm PES filtration</td><td class="yl">90–100%</td><td class="yl">~6.5×10^14 vg DS</td><td>Filtrate (DS): sterile AAV2 in formulation buffer ≥1×10^13 vg/mL; Waste: single-use filter capsule</td><td>Sartorius Sartopore 2 (0.22 µm PES, single-use)</td></tr>
+      <tr style="background:#F5F3FF;"><td class="yl" style="color:#5B21B6;">Formulation + Fill</td><td>P-010 — DP preparation and aseptic fill</td><td class="yl">Quantitative</td><td class="yl">5×10^12 vg/mL; 0.5 mL/vial (~3,000–4,000 vials)</td><td>DP buffer: 180 mM NaCl + 10 mM NaPO4 + 0.001% Poloxamer 188 + WFI pH 7.3; Diluent vial co-packaged; Container: 2 mL Type I borosilicate glass; Stopper: chlorobutyl rubber; N2 overlay</td><td>Automated aseptic fill line; ISO 5/7 GMP suite; gravimetric IPC; AVI system</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td colspan="2">Overall DSP Recovery (Harvest &#8594; Final DS)</td><td>~50%</td><td>~3,000–4,000 patient doses (eyes) at 1.5×10^11 vg/dose</td><td colspan="2">Storage: ≤−65°C; 21-month shelf life. Subretinal injection: 0.3 mL per eye after 1:10 on-site dilution.</td></tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- Regulatory / footnote strip -->
+<div style="margin:0 20px 24px;padding:12px 16px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);font-size:10px;color:var(--gray-500);line-height:1.7;">
+  <strong style="color:var(--gray-700);display:block;margin-bottom:4px;">Regulatory Framework &amp; Abbreviations</strong>
+  ICH Q5A (viral safety) · ICH Q5D (cell substrates) · ICH Q6B (biologics specifications) · ICH Q5E (comparability) · ICH Q1A (stability) · EU GMP Annex 13 (ATMPs) · FDA 21 CFR 211 · Health Canada NDS · EMA CTA · CPP = Critical Process Parameter · CQA = Critical Quality Attribute · PAT = Process Analytical Technology · DS = Drug Substance · DP = Drug Product · DSP = Downstream Processing · USP = Upstream Processing · TFF = Tangential Flow Filtration · AEX = Anion Exchange Chromatography · AUC = Analytical Ultracentrifugation · ddPCR = Droplet Digital PCR · DLS = Dynamic Light Scattering · TEM = Transmission Electron Microscopy · LAL = Limulus Amebocyte Lysate · MFI = Micro-Flow Imaging · VCD = Viable Cell Density · vg = Vector Genomes · MCB = Master Cell Bank · WCB = Working Cell Bank · RCA = Replication-Competent AAV
+</div>
+
+</div><!-- end flow-canvas -->
+
+<!-- RESIZER HANDLE -->
+<div class="lane-resizer" id="lane-resizer" title="Drag to resize lanes"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECONOMIC PANEL (right sidebar)
+═══════════════════════════════════════════════════════ -->
+<div class="econ-panel" id="econ-panel">
+  <div class="econ-panel-header">
+    <div class="econ-panel-title">Economic Analysis — SuperPro Designer Style</div>
+    <div class="econ-panel-sub">Per 20 L STR batch · ~3,000 doses · Estimates from literature + quoted sources</div>
+  </div>
+
+  <div class="econ-tabs">
+    <button class="econ-tab active" onclick="switchEconTab('overview')">Overview</button>
+    <button class="econ-tab" onclick="switchEconTab('capex')">CAPEX</button>
+    <button class="econ-tab" onclick="switchEconTab('opex')">OPEX</button>
+    <button class="econ-tab" onclick="switchEconTab('pricing')">Pricing</button>
+    <button class="econ-tab" onclick="switchEconTab('cashflow')">Cash Flow</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div class="econ-content">
+  <div class="econ-tab-panel active" id="etab-overview">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Batch COGS (fully loaded)</div>
+        <div class="kpi-value warn">~$160–350K</div>
+        <div class="kpi-sub">per 20 L STR batch (plasmid-free — $0 plasmid cost)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">COGS per dose (eye)</div>
+        <div class="kpi-value good">~$230–370</div>
+        <div class="kpi-sub">vs Luxturna ~$425,000/eye</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Doses per batch</div>
+        <div class="kpi-value">~3,000–4,000</div>
+        <div class="kpi-sub">vs ~100 (Luxturna roller bottles)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Titer improvement</div>
+        <div class="kpi-value good">100–1,000×</div>
+        <div class="kpi-sub">vs Luxturna 10^11–10^12 vg/L</div>
+      </div>
+    </div>
+
+    <div class="econ-section">Cost Breakdown — Per Batch (Plasmid-Free Platform)</div>
+    <div style="font-size:9px;color:var(--gray-500);margin-bottom:6px;font-style:italic;">Note: $0 GMP plasmid cost per production batch — all AAV genes stably integrated. One-time CRISPR R&D ~$100–200K amortized over platform life.</div>
+    <div class="bar-row"><span class="bar-label">Upstream (media, bags, inducers)</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:#2563EB;"></div></div><span class="bar-val">~$14–18K</span></div>
+    <div class="bar-row"><span class="bar-label">Harvest + clarification</span><div class="bar-track"><div class="bar-fill" style="width:6%;background:#047857;"></div></div><span class="bar-val">~$8–10K</span></div>
+    <div class="bar-row"><span class="bar-label">TFF + AEX chromatography</span><div class="bar-track"><div class="bar-fill" style="width:11%;background:#0369A1;"></div></div><span class="bar-val">~$15–22K</span></div>
+    <div class="bar-row"><span class="bar-label">Ultracentrifugation</span><div class="bar-track"><div class="bar-fill" style="width:6%;background:#5B21B6;"></div></div><span class="bar-val">~$7–11K</span></div>
+    <div class="bar-row"><span class="bar-label">TFF-2 + SEC polishing</span><div class="bar-track"><div class="bar-fill" style="width:4%;background:#374151;"></div></div><span class="bar-val">~$6–8K</span></div>
+    <div class="bar-row"><span class="bar-label">DS + DP release testing (QC)</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:#92400E;"></div></div><span class="bar-val">~$40–65K</span></div>
+    <div class="bar-row"><span class="bar-label">Fill/finish + vials/stoppers</span><div class="bar-track"><div class="bar-fill" style="width:13%;background:#B91C1C;"></div></div><span class="bar-val">~$17–30K</span></div>
+    <div class="bar-row"><span class="bar-label">DP release + packaging</span><div class="bar-track"><div class="bar-fill" style="width:17%;background:#D97706;"></div></div><span class="bar-val">~$24–46K</span></div>
+    <div class="bar-row" style="font-weight:600;"><span class="bar-label" style="color:var(--gray-800);">GMP overhead + labour</span><div class="bar-track"><div class="bar-fill" style="width:45%;background:#374151;"></div></div><span class="bar-val" style="color:var(--navy);">~$60–90K</span></div>
+
+    <div class="econ-section">Platform vs. Luxturna</div>
+    <table class="cost-table">
+      <thead><tr><th>Parameter</th><th>This Platform</th><th>Luxturna</th></tr></thead>
+      <tbody>
+        <tr><td>Platform</td><td>Stable HEK293SF STR</td><td>Adherent HEK293 roller bottles</td></tr>
+        <tr><td>Titer (vg/L)</td><td>≥10^14</td><td>10^11–10^12</td></tr>
+        <tr><td>Doses per batch</td><td>~3,000–4,000</td><td>~100</td></tr>
+        <tr><td>GMP plasmids per production batch</td><td><strong>0</strong> — plasmid-free (all genes stably integrated; plasmids used only once during R&amp;D cell line engineering)</td><td>3 per batch (pAAV + pRepCap + pHelper)</td></tr>
+        <tr><td>Plasmid cost per production batch</td><td>$0 (zero recurring plasmid cost)</td><td>~$500K–1M per batch</td></tr>
+        <tr><td>COGS per dose</td><td>~$230–370</td><td>~$425,000</td></tr>
+        <tr><td>Market price (current)</td><td>Target $200–400K/patient</td><td>$850,000/patient</td></tr>
+      </tbody>
+    </table>
+
+    <div class="econ-refs">
+      <div class="econ-refs-title">Key References</div>
+      <div class="econ-ref-item">Darrow (2019) Drug Discov Today 24(4):949 — Luxturna $850K/patient</div>
+      <div class="econ-ref-item">Parexel/ASGCT (2024): <a href="https://www.parexel.com/insights/blog/gene-therapy-are-high-costs-and-manufacturing-complexities-impeding-progress" target="_blank">$2M per 200 L GMP batch CDMO cost</a></div>
+      <div class="econ-ref-item">Sarkis et al. (2023) J Adv Manuf Process: <a href="https://aiche.onlinelibrary.wiley.com/doi/full/10.1002/amp2.10158" target="_blank">SuperPro Designer AAV TEA model</a></div>
+      <div class="econ-ref-item">DeSci Applied Research (2024): <a href="https://desciappliedresearch.com/2024/01/at-cost-aav/" target="_blank">At-cost AAV manufacturing analysis</a></div>
+      <div class="econ-ref-item">Jalšic et al. (2023) Mol Ther Methods: plasmid cost 60–80% of transient process COGS</div>
+    </div>
+  </div>
+
+  <!-- CAPEX TAB -->
+  <div class="econ-tab-panel" id="etab-capex">
+    <div class="econ-section">(a) Equipment CAPEX Estimates</div>
+    <table class="cost-table">
+      <thead><tr><th>Equipment</th><th>Source / Reference</th><th>Estimated Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Pall Allegro STR 50 L (new)</td><td><a href="https://questpair.com/marketplace/facilities-and-equipment/laboratory-equipment/general-laboratory-equipment/sample-preparation/pall-str50-single-use-bioreactor-83151" target="_blank">QuestPair marketplace</a></td><td>$200–400K</td></tr>
+        <tr><td>AKTA FPLC (new, configured)</td><td><a href="https://www.labx.com/product/ge-healthcare-akta" target="_blank">LabX.com (new $30K–100K)</a></td><td>$60–100K</td></tr>
+        <tr><td>Beckman XL-100K ultracentrifuge (new)</td><td><a href="https://newlifescientific.com/products/beckman-coulter-optima-xl-100k-floor-ultracentrifuge" target="_blank">New Life Scientific (used $11.3K; new ~$80–120K)</a></td><td>$80–120K</td></tr>
+        <tr><td>GE Pellicon 3 TFF system</td><td>Cytiva quote (cytivalifesciences.com)</td><td>$30–60K</td></tr>
+        <tr><td>BioRad QX200 ddPCR system</td><td>BioRad list price</td><td>$55–70K</td></tr>
+        <tr><td>Malvern Zetasizer (DLS)</td><td>Malvern Panalytical catalog</td><td>$35–50K</td></tr>
+        <tr><td>CellCelector robotic cloner</td><td>Aviso GmbH quote</td><td>$250–350K</td></tr>
+        <tr><td>Automated fill line (ISO 5/7 suite)</td><td>Industry estimate (CDMO build-out)</td><td>$300–600K</td></tr>
+        <tr><td>AVI + MFI + QC instruments</td><td>Supplier catalogs</td><td>$150–250K</td></tr>
+        <tr><td>HVAC, clean rooms, facility</td><td>Roland Berger (2023) GT manufacturing</td><td>$5–10M</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td colspan="2">Total Equipment + Facility CAPEX</td><td>~$7–12M equip + $8–15M facility = $15–27M</td></tr>
+      </tfoot>
+    </table>
+
+    <div class="econ-section">(b) Fixed Capital Investment (FCI)</div>
+    <table class="cost-table">
+      <thead><tr><th>Cost Category</th><th>Estimate (USD)</th></tr></thead>
+      <tbody>
+        <tr><td>Direct facility (clean rooms, HVAC, utilities)</td><td>$8–15M</td></tr>
+        <tr><td>Process equipment (all instruments)</td><td>$3–5M</td></tr>
+        <tr><td>QC laboratory fit-out + instruments</td><td>$2–4M</td></tr>
+        <tr><td>Engineering, design, commissioning (EPC)</td><td>$2–4M</td></tr>
+        <tr><td>Validation (IQ/OQ/PQ, process validation)</td><td>$1–3M</td></tr>
+        <tr><td>Regulatory submissions (NDS/IND/CTA)</td><td>$1–2M</td></tr>
+        <tr><td>Contingency (15%)</td><td>$2.5–5M</td></tr>
+      </tbody>
+      <tfoot><tr><td>Total Fixed Capital Investment (FCI)</td><td>~$20–38M (midpoint ~$29M)</td></tr></tfoot>
+    </table>
+
+    <div class="econ-refs">
+      <div class="econ-refs-title">References</div>
+      <div class="econ-ref-item"><a href="https://www.labx.com/item/beckman-coulter-optima-xl-100k-floor-ultracentrifuge/DIS-76406-beckman-coulter-optima-xl-100k-floor-ultracentrifuge" target="_blank">LabX — Beckman XL-100K used: $11,299</a></div>
+      <div class="econ-ref-item"><a href="https://www.labx.com/product/ge-healthcare-akta" target="_blank">LabX — AKTA FPLC new: $30K–100K</a></div>
+      <div class="econ-ref-item">Roland Berger (2023): Cutting the cost of gene therapy manufacturing</div>
+      <div class="econ-ref-item">Sarkis et al. (2023): CAMEP AAV SuperPro Designer model (J Adv Manuf Process)</div>
+    </div>
+  </div>
+
+  <!-- OPEX TAB -->
+  <div class="econ-tab-panel" id="etab-opex">
+    <div class="econ-section">(c) Raw Material Costs — Per Batch</div>
+    <table class="cost-table">
+      <thead><tr><th>Material</th><th>Source</th><th>Est. Cost/Batch</th></tr></thead>
+      <tbody>
+        <tr><td>HyCell TransFx-H media (~25 L equiv.)</td><td><a href="https://www.fishersci.com/shop/products/hycell-transfx-h-media/SH3093902" target="_blank">Fisher Scientific SH3093902</a><br>~$250–400/L (GMP bulk)</td><td>~$8–14K</td></tr>
+        <tr><td>BalanCD HEK293 fed-batch supplement</td><td>Irvine Scientific / Avantor</td><td>~$1.2–2K</td></tr>
+        <tr><td>GMP plasmids per production batch</td><td colspan="2">ZERO — hRPE65 cassette, Rep/Cap and helper genes are all stably integrated in genome. Plasmid CRISPR costs are one-time R&amp;D capital (~$100–200K, amortized). No recurring plasmid cost per batch.</td></tr>
+        <tr><td>PEI-Pro transfection reagent</td><td colspan="2">NOT REQUIRED for production — transfection is only used once during CRISPR cell line engineering (R&amp;D phase).</td></tr>
+        <tr><td>STR single-use biocontainer (20 L)</td><td>Pall / Cytiva</td><td>~$800–1.5K</td></tr>
+        <tr><td>Benzonase (Salt-Tolerant, GMP)</td><td><a href="https://www.sigmaaldrich.com/CA/en/technical-documents/technical-article/pharmaceutical-and-biopharmaceutical-manufacturing/gene-therapy-manufacturing/cell-lysis-deviron-dna-digestion-benzonase" target="_blank">Sigma-Aldrich GMP Benzonase</a></td><td>~$3–5K</td></tr>
+        <tr><td>Depth filters (Sartopore 2, single-use set)</td><td>Sartorius catalog</td><td>~$1.2–2.3K</td></tr>
+        <tr><td>Pellicon 3 TFF cassette (single-use)</td><td>Cytiva (cytivalifesciences.com)</td><td>~$3–6K (2 cassettes)</td></tr>
+        <tr><td>AEX column amortization (CIMmultus QA)</td><td>Sartorius / BIA Separations</td><td>~$100–150/run</td></tr>
+        <tr><td>Iodixanol (OptiPrep, GMP grade)</td><td>Sigma D1556</td><td>~$600–1.2K</td></tr>
+        <tr><td>Superdex 200 SEC amortization</td><td>Cytiva</td><td>~$20–30/run</td></tr>
+        <tr><td>0.22 µm sterile filter capsule</td><td>Sartorius Sartopore 2</td><td>~$200–500</td></tr>
+        <tr><td>Type I glass vials (3,500 units)</td><td>Schott pharma packaging</td><td>~$3.5–7K</td></tr>
+        <tr><td>Stoppers + crimp seals</td><td>West Pharmaceutical Services</td><td>~$2–3.2K</td></tr>
+        <tr><td>QC reagents (ddPCR, ELISA, LAL, MFI, AUC)</td><td>Multiple suppliers</td><td>~$22–42K</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="2">Total Raw Material Cost per Batch</td><td>~$89–170K</td></tr></tfoot>
+    </table>
+
+    <div class="econ-section">(d) Annual Operating Cost (4 Batches/Year)</div>
+    <table class="cost-table">
+      <thead><tr><th>Category</th><th>Annual Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Raw materials (4 batches)</td><td>~$356–680K</td></tr>
+        <tr><td>QC and release testing (4 batches)</td><td>~$185–335K</td></tr>
+        <tr><td>GMP labour (15 FTEs avg $90K/FTE)</td><td>~$1.35M</td></tr>
+        <tr><td>Facility overhead (HVAC, utilities, cleaning)</td><td>~$500K</td></tr>
+        <tr><td>Equipment maintenance (5% of equipment CAPEX)</td><td>~$500–750K</td></tr>
+        <tr><td>Regulatory + QA/QP overhead</td><td>~$300–500K</td></tr>
+        <tr><td>Cold-chain storage + distribution</td><td>~$100–200K</td></tr>
+        <tr><td>CAPEX depreciation ($25M over 10 years)</td><td>~$2.5M</td></tr>
+      </tbody>
+      <tfoot><tr><td>Total Annual Operating Cost</td><td>~$5.8–6.8M / year</td></tr></tfoot>
+    </table>
+  </div>
+
+  <!-- PRICING TAB -->
+  <div class="econ-tab-panel" id="etab-pricing">
+    <div class="econ-section">(e) Market Sizing &amp; Pricing Model</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">LCA-RPE65 global prevalence</div>
+        <div class="kpi-value" style="font-size:14px;">~1:530,000</div>
+        <div class="kpi-sub">~2,000–3,000 patients/year globally</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Batches needed / year (4 batches)</div>
+        <div class="kpi-value" style="font-size:14px;">~12,000 doses</div>
+        <div class="kpi-sub">Covers ~6,000 patients bilaterally</div>
+      </div>
+    </div>
+
+    <table class="cost-table">
+      <thead><tr><th>Scenario</th><th>Price/Patient</th><th>Revenue (500 pts/yr)</th><th>Gross Margin</th></tr></thead>
+      <tbody>
+        <tr><td>Conservative</td><td>$200,000</td><td>~$100M/yr</td><td>~$94–99.5M/yr</td></tr>
+        <tr><td>Base case</td><td>$300,000</td><td>~$150M/yr</td><td>~$144–149.5M/yr</td></tr>
+        <tr><td>Premium</td><td>$400,000</td><td>~$200M/yr</td><td>~$194–199.5M/yr</td></tr>
+        <tr><td style="color:#B91C1C;">Luxturna (reference)</td><td style="color:#B91C1C;">$850,000</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <div class="econ-section">Financial Projections</div>
+    <table class="cost-table">
+      <thead><tr><th>Metric</th><th>Estimate</th></tr></thead>
+      <tbody>
+        <tr><td>Total project investment (FCI + R&D ~$50M)</td><td>~$70–90M</td></tr>
+        <tr><td>Annual operating cost (4 batches)</td><td>~$5.8–6.8M</td></tr>
+        <tr><td>CAPEX payback period (base $300K/patient, 500 pts/yr)</td><td>&lt;2 years at commercial volume</td></tr>
+        <tr><td>R&D recovery period (incl. clinical bridging study ~$50M)</td><td>~3–5 years post-approval</td></tr>
+        <tr><td>10-year NPV (15% discount; base case)</td><td>~$580–900M</td></tr>
+        <tr><td>Price reduction vs Luxturna (base $300K)</td><td>~65% lower list price</td></tr>
+      </tbody>
+    </table>
+
+    <div class="annotation" style="margin-top:8px;">
+      Value proposition: The stable HEK293SF platform is entirely plasmid-free during production — all three AAV components (Rep/Cap, helper genes, and hRPE65 transgene) are stably integrated at genomic safe harbor sites. This eliminates the $500K–1M per-batch plasmid cost of Luxturna's transient transfection entirely, not just partially. Combined with 100–1,000× higher titer and 30× more doses per batch, the platform achieves &gt;99.9% reduction in COGS per dose vs Luxturna ($230–370 vs $425,000/dose), enabling a patient price of $200–400K while remaining highly profitable.
+    </div>
+
+    <div class="econ-refs">
+      <div class="econ-refs-title">Pricing References</div>
+      <div class="econ-ref-item">Darrow (2019) Drug Discov Today 24(4):949 — Luxturna list price $850K</div>
+      <div class="econ-ref-item">Sallum et al. (2022) Adv Ther 39:1179 — LCA-RPE65 epidemiology</div>
+      <div class="econ-ref-item">DeSci Applied Research (2024) — At-cost AAV manufacturing cost modeling</div>
+      <div class="econ-ref-item">Roland Berger (2023) — Gene therapy manufacturing cost reduction</div>
+    </div>
+  </div>
+
+  <!-- CASH FLOW CHART TAB -->
+  <div class="econ-tab-panel" id="etab-cashflow">
+    <div class="econ-section">Cumulative Cash Flow vs. Production Batches</div>
+    <div style="font-size:10px;color:var(--gray-500);line-height:1.5;margin-bottom:10px;">
+      SuperPro Designer–style profitability analysis. Initial capital front-loaded (FCI $29M + R&amp;D $20M + startup $5M + working capital $3M = <strong>$57M total investment</strong>). Revenue modelled at <strong>$300K/patient</strong> · 750 patients/batch · 4 batches/year. COGS <strong>$0.9M/batch</strong> (plasmid-free, 0 recurring plasmid cost).
+    </div>
+    <div id="profit-chart-wrap" style="position:relative;height:240px;width:100%;">
+      <canvas id="profit-chart" role="img" aria-label="Cumulative cash flow chart showing break-even point across production batches for AAV2-hRPE65v2 manufacturing platform"></canvas>
+    </div>
+    <div class="chart-legend">
+      <div class="chart-leg-item"><div class="chart-leg-swatch" style="background:#1B4F8A;"></div>Cumulative Cash Flow</div>
+      <div class="chart-leg-item"><div class="chart-leg-swatch dashed" style="background:repeating-linear-gradient(90deg,#15803D 0,#15803D 4px,transparent 4px,transparent 8px);height:2px;"></div>Batch Revenue</div>
+      <div class="chart-leg-item"><div class="chart-leg-swatch" style="background:#B91C1C;height:2px;border-top:2px dashed #B91C1C;background:transparent;"></div>Batch COGS</div>
+      <div class="chart-leg-item"><div style="width:10px;height:10px;border-radius:50%;background:#D97706;"></div>Break-even point</div>
+    </div>
+    <div style="margin-top:12px;">
+      <table class="cost-table">
+        <thead><tr><th>Parameter</th><th>Value</th><th>Basis</th></tr></thead>
+        <tbody>
+          <tr><td>Fixed Capital Investment (FCI)</td><td>$29M</td><td>Facility + equipment (midpoint estimate)</td></tr>
+          <tr><td>R&amp;D + Cell Line Engineering</td><td>$20M</td><td>One-time; CRISPR, cell line dev., IND-enabling</td></tr>
+          <tr><td>Startup &amp; Validation Cost</td><td>$5M</td><td>9.2c SuperPro Designer — % of DFC</td></tr>
+          <tr><td>Working Capital</td><td>$3M</td><td>9.2b SuperPro Designer — 60 days operating cost</td></tr>
+          <tr><td><strong>Total Capital Investment</strong></td><td><strong>$57M</strong></td><td>Sum; corresponds to SuperPro Designer Section 10</td></tr>
+          <tr><td>Revenue per batch</td><td>$225M</td><td>750 patients × $300K/patient</td></tr>
+          <tr><td>COGS per batch (fully loaded)</td><td>$0.9M</td><td>Plasmid-free platform; no recurring plasmid cost</td></tr>
+          <tr><td>Gross profit per batch</td><td>$224.1M</td><td>Revenue − COGS</td></tr>
+          <tr><td>Annual operating cost (4 batches)</td><td>~$6.5M</td><td>Incl. labour, overhead, depreciation</td></tr>
+          <tr><td>Break-even (production batches)</td><td>~1 batch</td><td>Dominated by revenue-to-COGS ratio at $300K/patient price</td></tr>
+          <tr><td>Payback period (vs total investment)</td><td>&lt;1 year</td><td>At commercial volume (500+ patients/year)</td></tr>
+          <tr><td>10-yr NPV (15% discount rate)</td><td>~$580–900M</td><td>Base pricing scenario; 500 pts/yr ramp</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="econ-refs">
+      <div class="econ-refs-title">SuperPro Designer Economics Model Basis (Chapter 9)</div>
+      <div class="econ-ref-item">9.2a Direct Fixed Capital (DFC): equipment purchase cost + installation + piping + instrumentation + buildings. Estimated via PC × DFC factor.</div>
+      <div class="econ-ref-item">9.2b Working Capital: 60 days of labour + raw materials + utilities cost (set by user or calculated).</div>
+      <div class="econ-ref-item">9.2c Startup &amp; Validation Cost: pre-opening one-time expenditures; estimated as % of DFC (~5–10% for biotech).</div>
+      <div class="econ-ref-item">9.2d Up-Front R&amp;D Cost: $20M allocated for cell line engineering, process dev., and IND-enabling studies (specified at section level).</div>
+      <div class="econ-ref-item">9.3 Annual Operating Cost (AOC): materials + consumables + labour + utilities + facility-dependent + Lab/QC/QA costs. Calculated at section level and rolled up to EER Section 9.</div>
+      <div class="econ-ref-item">9.5 Profitability Analysis: IRR, NPV, gross margin, payback period. Generated in EER Section 10 only when revenues > 0.</div>
+      <div class="econ-ref-item">Sarkis et al. (2023) J Adv Manuf Process: SuperPro Designer AAV techno-economic model — raw material cost $3.3×10^4/batch basis; batch time ~22 days; USP + DSP + F&amp;F modelled in separate sections.</div>
+    </div>
+  </div>
+
+  </div><!-- end econ-content -->
+</div><!-- end econ-panel -->
+
+</div><!-- end main-wrap -->
+
+<script>
+/* ═══════════ PHASE TOGGLE ═══════════ */
+function togglePhase(id) {
+  const body = document.getElementById('body-phase-' + id);
+  const chev = document.getElementById('chev-phase-' + id);
+  const isOpen = !body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', isOpen);
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+
+/* ═══════════ STEP TOGGLE ═══════════ */
+function toggleStep(id) {
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+
+/* ═══════════ STEP TAB SWITCH ═══════════ */
+function switchTab(stepId, tabId) {
+  const tabs = document.querySelectorAll('#tabs-' + stepId + ' .step-tab');
+  const panels = document.querySelectorAll('[id^="tab-' + stepId + '-"]');
+  tabs.forEach(t => t.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  const activeTab = document.querySelector('#tabs-' + stepId + ' .step-tab[onclick*="' + tabId + '"]');
+  const activePanel = document.getElementById('tab-' + stepId + '-' + tabId);
+  if (activeTab) activeTab.classList.add('active');
+  if (activePanel) activePanel.classList.add('active');
+}
+
+/* ═══════════ ECON PANEL TAB ═══════════ */
+function switchEconTab(id) {
+  document.querySelectorAll('.econ-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.econ-tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('etab-' + id).classList.add('active');
+  if (id === 'cashflow' && typeof Chart !== 'undefined') {
+    const existing = Chart.getChart('profit-chart');
+    if (!existing) renderProfitChart();
+  }
+}
+
+/* ═══════════ EXPAND/COLLAPSE ALL ═══════════ */
+function expandAllPhases() {
+  document.querySelectorAll('.phase-body').forEach(b => b.classList.remove('collapsed'));
+  document.querySelectorAll('.phase-chevron').forEach(c => c.classList.add('open'));
+}
+
+function collapseAllPhases() {
+  document.querySelectorAll('.phase-body').forEach(b => b.classList.add('collapsed'));
+  document.querySelectorAll('.phase-chevron').forEach(c => c.classList.remove('open'));
+}
+
+function expandAllSteps() {
+  document.querySelectorAll('.step-body').forEach(b => b.classList.add('open'));
+  document.querySelectorAll('.step-chevron').forEach(c => c.classList.add('open'));
+}
+
+function collapseAllSteps() {
+  document.querySelectorAll('.step-body').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.step-chevron').forEach(c => c.classList.remove('open'));
+}
+
+/* ═══════════ MAIN VIEW PRESETS ═══════════ */
+function setMainView(mode) {
+  // Update tab UI
+  document.querySelectorAll('#main-view-tabs .view-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (mode === 'executive') {
+    // Collapse all phases and all steps
+    collapseAllPhases();
+    collapseAllSteps();
+  } else if (mode === 'engineering') {
+    // Expand all phases, collapse step detail bodies
+    expandAllPhases();
+    collapseAllSteps();
+  } else if (mode === 'full') {
+    // Expand everything
+    expandAllPhases();
+    expandAllSteps();
+  }
+}
+
+/* ═══════════ ECON PANEL TOGGLE ═══════════ */
+function toggleEconPanel() {
+  const panel = document.getElementById('econ-panel');
+  const btn = document.getElementById('econ-toggle-btn');
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  btn.classList.toggle('active', !isHidden);
+}
+
+/* ═══════════ MAIN VIEW PRESETS ═══════════ */
+/* ═══════════ ECON PANEL TOGGLE ═══════════ */
+/* ═══════════ INIT — start in Engineering view ═══════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  expandAllPhases();
+  collapseAllSteps();
+  document.querySelectorAll('#main-view-tabs .view-tab')[1].classList.add('active');
+  document.querySelectorAll('#main-view-tabs .view-tab')[0].classList.remove('active');
+  initResizer();
+  initSubFlowcharts();
+  // Chart will render when user clicks the Cash Flow tab
+  // (Chart.js is loaded at end of body, after this handler)
+});
+</script>
+
+<!-- ═══════════════════════════════════════════
+     ADDITIONAL STYLES: Resizer, Sub-flowcharts,
+     Improved diamonds, Hover tooltips, Chart
+═══════════════════════════════════════════ -->
+<style>
+/* ── RESIZABLE LANE HANDLE ─────────────────── */
+.lane-resizer {
+  width: 6px;
+  flex-shrink: 0;
+  background: var(--gray-200);
+  cursor: col-resize;
+  position: relative;
+  z-index: 20;
+  transition: background .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lane-resizer:hover, .lane-resizer.dragging {
+  background: #1B4F8A;
+}
+.lane-resizer::after {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 32px;
+  background: var(--gray-300);
+  border-radius: 1px;
+}
+.lane-resizer:hover::after, .lane-resizer.dragging::after {
+  background: white;
+}
+
+/* ── IMPROVED DECISION DIAMOND ─────────────── */
+.decision-wrap { padding: 0 20px 4px; display: flex; flex-direction: column; align-items: center; }
+.decision-card { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 540px; }
+
+.diamond-outer {
+  position: relative;
+  width: 260px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.diamond-outer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #FFFBEB;
+  border: 2.5px solid #D97706;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 2px 8px rgba(217,119,6,.18);
+}
+.diamond-inner-text {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 46px;
+}
+.diamond-title { font-size: 10px; font-weight: 800; color: #7C2D12; text-transform: uppercase; letter-spacing: .06em; line-height: 1.2; }
+.diamond-subtitle { font-size: 8.5px; color: #92400E; margin-top: 2px; line-height: 1.35; }
+
+/* Arrow from diamond top */
+.decision-arrow-in {
+  width: 2px;
+  height: 16px;
+  background: #D97706;
+  margin: 0 auto;
+  position: relative;
+}
+.decision-arrow-in::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid #D97706;
+}
+
+/* Branches row */
+.decision-branches {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 520px;
+  margin-top: 6px;
+  position: relative;
+}
+.decision-branches::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--gray-300);
+}
+.branch-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.branch-line-v {
+  width: 2px;
+  height: 14px;
+  margin: 0 auto;
+}
+.branch-line-v.pass { background: #16A34A; }
+.branch-line-v.fail { background: #DC2626; }
+.branch-arrow-down {
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  margin: 0 auto 4px;
+}
+.branch-arrow-down.pass { border-top: 6px solid #16A34A; }
+.branch-arrow-down.fail { border-top: 6px solid #DC2626; }
+.branch-pass {
+  display: flex; align-items: center; gap: 5px;
+  color: #14532D; background: #DCFCE7;
+  padding: 4px 10px; border-radius: 4px;
+  border: 1.5px solid #86EFAC;
+  font-size: 10px; font-weight: 600;
+  white-space: nowrap;
+}
+.branch-fail {
+  display: flex; align-items: center; gap: 5px;
+  color: #7F1D1D; background: #FEE2E2;
+  padding: 4px 10px; border-radius: 4px;
+  border: 1.5px solid #FECACA;
+  font-size: 10px; font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Vertical connector with visible arrow between elements */
+.flow-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+}
+.flow-arrow-line { width: 2px; background: var(--gray-300); }
+.flow-arrow-head {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--gray-400);
+  margin: 0 auto;
+}
+
+/* ── SUB-FLOWCHART ─────────────────────────── */
+.subflow-container {
+  padding: 14px 16px;
+  background: #FAFBFF;
+  border-top: 1px solid var(--gray-200);
+}
+.subflow-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.subflow-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: var(--navy);
+  border-radius: 1px;
+}
+.subflow-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+/* Sub-flowchart node */
+.sf-node {
+  position: relative;
+  border-radius: 5px;
+  border: 1.5px solid;
+  padding: 7px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  width: 90%;
+  max-width: 480px;
+}
+.sf-node:hover { filter: brightness(.96); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+
+.sf-node-title { font-size: 11px; font-weight: 600; line-height: 1.3; }
+.sf-node-sub { font-size: 9px; margin-top: 2px; opacity: .75; font-family: var(--mono); }
+
+/* Node color variants */
+.sf-process  { background: #EFF6FF; border-color: #3B82F6; color: #1E3A8A; }
+.sf-decision { background: #FFFBEB; border-color: #D97706; color: #78350F;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  width: 260px; height: 72px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; border-radius: 0;
+  padding: 0 60px; }
+.sf-io       { background: #F0FDF4; border-color: #22C55E; color: #14532D;
+  clip-path: polygon(4% 0%, 100% 0%, 96% 100%, 0% 100%); border-radius: 0; }
+.sf-store    { background: #F9FAFB; border-color: #9CA3AF; color: #374151; border-radius: 20px; }
+.sf-qc       { background: #FFFBEB; border-color: #F59E0B; color: #78350F; }
+.sf-product  { background: #DCFCE7; border-color: #16A34A; color: #14532D; }
+.sf-waste    { background: #FEF2F2; border-color: #EF4444; color: #7F1D1D; }
+
+/* Sub-flow connector */
+.sf-arrow {
+  width: 2px; height: 14px;
+  background: var(--gray-300);
+  margin: 0 auto;
+  position: relative;
+  flex-shrink: 0;
+}
+.sf-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid var(--gray-400);
+}
+
+/* Horizontal split for sub-flow branches */
+.sf-split-row {
+  display: flex;
+  align-items: flex-start;
+  width: 90%;
+  max-width: 480px;
+  gap: 0;
+}
+.sf-branch { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.sf-h-line { flex: 1; height: 2px; background: var(--gray-200); align-self: flex-start; margin-top: 7px; }
+
+/* ── HOVER TOOLTIP (CPP/CQA/PAT/Equipment) ─ */
+.sf-node { isolation: isolate; }
+.sf-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  width: 320px;
+  background: #1E293B;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  pointer-events: none;
+}
+.sf-node:hover .sf-tooltip { display: block; }
+.sf-tooltip-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #334155;
+}
+.sf-tooltip-section {
+  margin-bottom: 6px;
+}
+.sf-tooltip-section-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.sf-cpp  .sf-tooltip-section-label { color: #60A5FA; }
+.sf-cqa  .sf-tooltip-section-label { color: #34D399; }
+.sf-pat  .sf-tooltip-section-label { color: #FBBF24; }
+.sf-equip .sf-tooltip-section-label { color: #C4B5FD; }
+.sf-tooltip-item {
+  font-size: 9px;
+  color: #CBD5E1;
+  padding: 1px 0 1px 8px;
+  border-left: 2px solid #334155;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.sf-cpp  .sf-tooltip-item { border-color: #3B82F6; }
+.sf-cqa  .sf-tooltip-item { border-color: #10B981; }
+.sf-pat  .sf-tooltip-item { border-color: #F59E0B; }
+.sf-equip .sf-tooltip-item { border-color: #8B5CF6; }
+
+/* Ensure tooltip stays above phase body overflow:hidden */
+.step-body { overflow: visible !important; }
+.step-tab-panel { overflow: visible !important; }
+.subflow-canvas { overflow: visible !important; }
+
+/* ── PROFIT CHART ──────────────────────────── */
+#profit-chart-wrap {
+  padding: 4px 0;
+}
+#profit-chart-wrap canvas {
+  width: 100% !important;
+  max-height: 260px;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 10px;
+}
+.chart-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gray-600);
+}
+.chart-leg-swatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+.chart-leg-swatch.dashed {
+  background: repeating-linear-gradient(90deg, #0369A1 0, #0369A1 4px, transparent 4px, transparent 8px);
+  height: 2px;
+}
+
+/* ── IMPROVED STEP TABLE CONTRAST ─────────── */
+.param-table tr td:first-child {
+  background: var(--gray-50);
+  border-right: 1px solid var(--gray-200);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gray-600);
+  white-space: nowrap;
+  padding: 4px 8px 4px 6px;
+}
+.param-table tr td:last-child { padding: 4px 6px; }
+.param-table tr:nth-child(odd) td:last-child { background: #FAFBFC; }
+.param-table tr:hover td { background: var(--blue-light) !important; color: var(--navy) !important; }
+
+.detail-col-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: white;
+  background: var(--navy);
+  padding: 4px 8px;
+  border-radius: 3px;
+  margin-bottom: 4px;
+}
+
+/* Step tab improved styling */
+.step-tabs { background: var(--gray-100); border-bottom: 2px solid var(--gray-200); }
+.step-tab { font-size: 10px; font-weight: 600; padding: 7px 14px; letter-spacing: .05em; }
+.step-tab.active { background: white; color: var(--navy); border-bottom: 2px solid var(--navy); font-weight: 700; }
+.step-tab-panel { background: white; }
+
+/* Tag contrast improvements */
+.tag-cpp   { background: #EFF6FF; color: #1E3A8A; border-color: #93C5FD; font-weight: 500; }
+.tag-cqa   { background: #F0FDF4; color: #14532D; border-color: #6EE7B7; font-weight: 500; }
+.tag-pat   { background: #FFFBEB; color: #713F12; border-color: #FCD34D; font-weight: 500; }
+.tag-equip { background: #F5F3FF; color: #3B0764; border-color: #C4B5FD; font-weight: 500; }
+.tag-waste { background: #FFF1F2; color: #881337; border-color: #FDA4AF; font-weight: 500; }
+
+/* Hold point improved */
+.hold-point {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  background: #FFFBEB; border: 1.5px solid #F59E0B;
+  border-radius: 5px; font-size: 10px; font-weight: 700; color: #78350F;
+  margin: 8px auto; box-shadow: 0 1px 4px rgba(245,158,11,.2);
+}
+
+/* Flow connector with arrow between major steps */
+.step-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  min-height: 20px;
+}
+.step-connector-line { width: 2px; background: var(--gray-300); flex: 1; min-height: 12px; }
+.step-connector-arrow {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--gray-400);
+  margin: 0 auto;
+}
+</style>
+
+<script>
+/* ═══════════════════════════════════════════
+   RESIZABLE LANES
+═══════════════════════════════════════════ */
+function initResizer() {
+  const resizer = document.getElementById('lane-resizer');
+  if (!resizer) return;
+  const flowCanvas = document.getElementById('flow-canvas');
+  const econPanel  = document.getElementById('econ-panel');
+  let startX, startFlowW, startEconW;
+
+  resizer.addEventListener('mousedown', e => {
+    startX     = e.clientX;
+    startFlowW = flowCanvas.getBoundingClientRect().width;
+    startEconW = econPanel.getBoundingClientRect().width;
+    resizer.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMove(e) {
+      const dx = e.clientX - startX;
+      const newFlowW = Math.max(400, startFlowW + dx);
+      const newEconW = Math.max(280, startEconW - dx);
+      flowCanvas.style.flex = 'none';
+      flowCanvas.style.width = newFlowW + 'px';
+      econPanel.style.width  = newEconW + 'px';
+    }
+    function onUp() {
+      resizer.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+    e.preventDefault();
+  });
+}
+
+/* ═══════════════════════════════════════════
+   SUB-FLOWCHARTS with hover tooltips
+═══════════════════════════════════════════ */
+function initSubFlowcharts() {
+  // Build sub-flowcharts for each phase's process tab
+  buildSubflow('p001', sfCellEngineering());
+  buildSubflow('p002', sfSeedExpansion());
+  buildSubflow('p003', sfBioreactor());
+  buildSubflow('p004', sfHarvest());
+  buildSubflow('p005', sfTFF1());
+  buildSubflow('p006', sfAEX());
+  buildSubflow('p007', sfUltracentrifugation());
+  buildSubflow('p008', sfPolishing());
+  buildSubflow('p009', sfSterileFiltration());
+  buildSubflow('p010', sfFillFinish());
+  buildSubflow('p011', sfRelease());
+}
+
+function buildSubflow(stepId, nodes) {
+  const processPanel = document.getElementById('tab-' + stepId + '-process');
+  if (!processPanel) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'subflow-container';
+  wrap.innerHTML = '<div class="subflow-title">Process Sub-Flowchart — hover nodes for CPP / CQA / PAT / Equipment</div>'
+                 + '<div class="subflow-canvas" id="sf-' + stepId + '"></div>';
+  processPanel.appendChild(wrap);
+  const canvas = wrap.querySelector('.subflow-canvas');
+  canvas.innerHTML = renderNodes(nodes);
+}
+
+function renderNodes(nodes) {
+  return nodes.map((node, i) => {
+    const arrow = (i < nodes.length - 1) ? '<div class="sf-arrow" style="margin:0 auto;"></div>' : '';
+    if (node.type === 'split') {
+      return renderSplit(node) + arrow;
+    }
+    return renderNode(node) + arrow;
+  }).join('');
+}
+
+function renderNode(n) {
+  const cls = 'sf-node sf-' + (n.style || 'process') + ' ' + (n.tooltipClass || '');
+  const tooltip = n.tooltip ? renderTooltip(n.tooltip, n.tooltipClass) : '';
+  return `<div class="${cls}" style="margin:0 auto;">
+    <div class="sf-node-title">${n.title}</div>
+    ${n.sub ? `<div class="sf-node-sub">${n.sub}</div>` : ''}
+    ${tooltip}
+  </div>`;
+}
+
+function renderSplit(n) {
+  // Two-branch side-by-side
+  const left  = renderNode({...n.left,  style: n.left.style  || 'product'});
+  const right = renderNode({...n.right, style: n.right.style || 'waste'  });
+  return `<div class="sf-split-row" style="width:90%;max-width:480px;margin:0 auto;gap:8px;">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">${left}</div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">${right}</div>
+  </div>`;
+}
+
+function renderTooltip(data, cls) {
+  const sections = [
+    { key: 'cpp',   label: 'Critical Process Parameters (CPPs)', cls: 'sf-cpp'   },
+    { key: 'cqa',   label: 'Critical Quality Attributes (CQAs)', cls: 'sf-cqa'   },
+    { key: 'pat',   label: 'Process Analytical Technology (PAT)', cls: 'sf-pat'   },
+    { key: 'equip', label: 'Equipment',                           cls: 'sf-equip' },
+  ].filter(s => data[s.key] && data[s.key].length);
+
+  const sectionsHtml = sections.map(s =>
+    `<div class="sf-tooltip-section ${s.cls}">
+      <div class="sf-tooltip-section-label">${s.label}</div>
+      ${data[s.key].map(item => `<div class="sf-tooltip-item">${item}</div>`).join('')}
+    </div>`
+  ).join('');
+
+  return `<div class="sf-tooltip">
+    <div class="sf-tooltip-title">${data.title || 'Parameters'}</div>
+    ${sectionsHtml}
+  </div>`;
+}
+
+/* ═══════════ SUB-FLOWCHART DEFINITIONS ═══════════ */
+
+function sfCellEngineering() { return [
+  { title: 'HEK293SF Host Cells', style: 'io', sub: 'Suspension-adapted; serum-free' },
+  { title: 'CRISPR-Cas9 HDR — AAVS1 Integration', style: 'process', sub: 'Allele 1: Rep68/Rep40/Cap2 (Tet-On 3G) | Allele 2: E2A/VA RNA I/L4 (Tet-On 3G)',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'CRISPR Integration — AAVS1',
+      cpp: ['Rep68: 1–3 copies/genome (optimal stoichiometry)', 'Rep40: 6–12 copies/genome', 'P5 promoter inactivated — prevents E1A-driven cytotoxic Rep expression'],
+      cqa: ['Site-specific integration confirmed (junction PCR 5\' + 3\' flanks)', 'No off-target integration (ddPCR)', 'Leaky Rep expression <5% pre-induction (RT-ddPCR)'],
+      pat: ['Junction PCR: AAVS1 allele 1 + 2 confirmation', 'ddPCR: copy number per genome', 'RT-ddPCR: pre-induction Rep68 mRNA <5% of induced'],
+      equip: ['CellCelector robotic cloner (Aviso GmbH)', 'PCR thermocycler + gel electrophoresis', 'BioRad QX200 ddPCR'] }},
+  { title: 'CRISPR-Cas9 HDR — ROSA26 Integration', style: 'process', sub: 'hRPE65 cassette: ITR–CMV–CβA–hRPE65 cDNA–BGH polyA–ITR (3.9 kb)',
+    tooltipClass: 'sf-cqa',
+    tooltip: { title: 'CRISPR Integration — ROSA26 (Chr 3)',
+      cpp: ['Single insertion at ROSA26 (Chr 3) safe harbor locus', 'CMV enhancer + CβA promoter for sustained RPE expression'],
+      cqa: ['Transgene integrity: Sanger sequencing — hRPE65 cDNA intact and mutation-free', 'Site-specific ROSA26 integration (junction PCR)', 'Cassette size ≤4.7 kb — fits AAV2 capsid'],
+      pat: ['Sanger sequencing: full hRPE65 cDNA insert', 'Junction PCR: ROSA26 5\' + 3\' flanking arms'],
+      equip: ['Sanger sequencing service', 'BioRad QX200 ddPCR'] }},
+  { title: 'Single-Cell Cloning', style: 'process', sub: 'CellCelector robotic isolation → 96-well plates',
+    tooltipClass: 'sf-equip',
+    tooltip: { title: 'Clone Isolation',
+      cpp: ['Single-cell deposition confirmed per well', 'Serum-free HyCell TransFx-H throughout'],
+      cqa: ['Monoclonality confirmed (CellCelector image verification)'],
+      pat: ['Live cell imaging at deposition'],
+      equip: ['CellCelector (Aviso GmbH)', '96-well plates (low-attachment)'] }},
+  { title: 'Clone QC Screening', style: 'qc', sub: 'Junction PCR · Western blot · ddPCR copy number · Shake flask induction titer',
+    tooltipClass: 'sf-pat',
+    tooltip: { title: 'Clone QC Gate',
+      cpp: ['Minimum induction titer ≥5×10^10 vg/mL at 125 mL shake flask scale', 'Harvest viability ≥65% post-induction'],
+      cqa: ['Rep68 pre-induction leakage <5% of induced level', 'AAVS1 + ROSA26 integration confirmed (junction PCR)', 'Rep68: 1–3 copies; Rep40: 6–12 copies (ddPCR)'],
+      pat: ['RT-ddPCR: pre-induction Rep68 mRNA leak', 'ddPCR: genome titer at shake flask scale', 'Vi-CELL XR: viability post-induction'],
+      equip: ['BioRad QX200 ddPCR', 'Vi-CELL XR (Beckman)', '125 mL shake flasks'] }},
+  { type: 'split',
+    left:  { title: 'PASS → MCB Generation', style: 'product', sub: 'Top clone → MCB banking' },
+    right: { title: 'FAIL → Re-screen', style: 'waste', sub: 'Discard clone; next candidate' }},
+  { title: 'MCB → WCB Banking', style: 'store', sub: '≤−150°C LN2 vapor · ≥150 vials · ICH Q5D' },
+];}
+
+function sfSeedExpansion() { return [
+  { title: 'WCB Thaw', style: 'io', sub: 'Viability ≥90% post-thaw required',
+    tooltip: { title: 'WCB Thaw',
+      cpp: ['Viability ≥90% post-thaw (go/no-go)', 'Passage number ≤30 from MCB verified'],
+      cqa: ['Cell viability ≥90%', 'Mycoplasma absent (compendial)'],
+      pat: ['Vi-CELL XR viability', 'NucleoCounter NC-200'],
+      equip: ['37°C water bath', 'NucleoCounter NC-200'] }},
+  { title: 'T-Flask Expansion (Day 0–4)', style: 'process', sub: 'HyCell TransFx-H · 37°C · 0.35×10^6/mL seed',
+    tooltip: { title: 'T-Flask (Day 0–4)',
+      cpp: ['Seeding VCD: 0.35×10^6 cells/mL', 'Temperature: 37°C; 5% CO2', 'Passage logged vs WCB record'],
+      cqa: ['Viability ≥95% before transfer'],
+      pat: ['NucleoCounter NC-200 at-line (daily)'],
+      equip: ['T-flasks (25–75 mL)', 'CO2 incubator'] }},
+  { title: '125 mL → 500 mL Shake Flask (Day 4–7)', style: 'process', sub: '120 rpm orbital shaker · 5% CO2',
+    tooltip: { title: 'Shake Flask Scale-Up',
+      cpp: ['Seeding VCD 0.35×10^6/mL each step', 'Viability ≥95% before each transfer', 'Passage ≤30 enforced'],
+      cqa: ['Viability ≥95% at transfer'],
+      pat: ['NucleoCounter NC-200 at-line'],
+      equip: ['125 mL + 500 mL shake flasks', 'Orbital shaker incubator 120 rpm'] }},
+  { title: '2 L Spinner Flask (Day 7–10)', style: 'process', sub: 'Target: VCD 2×10^6 /mL; viability ≥95%',
+    tooltip: { title: '2 L Spinner (Day 7–10)',
+      cpp: ['Target VCD 2×10^6 cells/mL at bioreactor inoculation', 'Viability ≥95%'],
+      cqa: ['VCD 2×10^6/mL (go/no-go for STR inoculation)', 'RT-ddPCR Rep68 leak check <5% induced'],
+      pat: ['NucleoCounter NC-200 (VCD)', 'RT-ddPCR (Rep68 leak — go/no-go gate)', 'Vi-CELL XR confirmatory viability'],
+      equip: ['2 L spinner flask', 'Magnetic stirrer'] }},
+  { type: 'split',
+    left:  { title: 'PASS → STR Inoculation', style: 'product', sub: 'VCD + viability + leak check OK' },
+    right: { title: 'FAIL → Thaw new WCB', style: 'waste', sub: 'Restart seed train' }},
+];}
+
+function sfBioreactor() { return [
+  { title: 'STR Inoculation', style: 'io', sub: 'Pall Allegro STR · 1×10^6 cells/mL · 20 L working volume',
+    tooltip: { title: 'STR Inoculation',
+      cpp: ['Seeding VCD: 1×10^6 cells/mL', 'Working volume: 20 L', 'Media: HyCell TransFx-H + BalanCD supplement'],
+      equip: ['Pall Allegro STR (single-use, 10–2000 L scalable)'] }},
+  { title: 'Culture Phase (48 h pre-induction)', style: 'process', sub: 'pH 7.15±0.1 · DO ≥40% · 37°C',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Culture Phase CPPs',
+      cpp: ['pH: 7.15 ± 0.1 (automated Na2CO3/NaHCO3 correction)', 'Dissolved oxygen: ≥40% saturation (sparging 0.1–0.5 vvm)', 'Temperature: 37°C', 'Target induction VCD: 5–10×10^6 cells/mL; viability >90%'],
+      cqa: ['VCD 5–10×10^6/mL at induction (go/no-go)', 'Viability >90% at induction'],
+      pat: ['Aber Futura capacitance probe (inline VCD + viability)', 'Inline pH + DO electrochemical sensors', 'Vi-CELL XR at-line (8 h intervals)'],
+      equip: ['Pall Allegro STR', 'Aber Futura inline probe', 'Automated base addition pump'] }},
+  { title: 'Doxycycline Addition (t = 0 h)', style: 'qc', sub: '1 µg/mL · Activates Rep68/40 + adenoviral helper genes',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Staggered Induction — Step 1',
+      cpp: ['Doxycycline: 1 µg/mL at t=0 h', 'Triggers Rep68/40 and E2A/VA RNA/L4 expression via Tet-On 3G promoter', 'Rep68 binds ITRs and initiates hRPE65 genome replication'],
+      cqa: ['Rep68 expression onset confirmed by RT-ddPCR at t+4 h', 'Genome replication tracked by ddPCR at t+24 h'],
+      pat: ['RT-ddPCR Rep68 mRNA at t+4h', 'ddPCR crude titer at t+24h'] }},
+  { title: 'Cumate Addition (t + 8 h)', style: 'qc', sub: '30 µg/mL · Activates Cap2 — capsid assembly begins',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Staggered Induction — Step 2 (Novel)',
+      cpp: ['Cumate: 30 µg/mL at t+8h (8 h delay is critical — allows genome replication before capsid assembly)', 'Temperature shift to 35°C at t+24h post-induction (extends viability 12–24 h)'],
+      cqa: ['Full:empty capsid ratio improved 2–4× vs simultaneous induction (Lu et al., 2023)', 'Titer improvement 2–4× vs simultaneous induction'],
+      pat: ['DLS at harvest: particle size PDI <0.2', 'ddPCR daily from t+24h onward'] }},
+  { title: 'Fed-Batch Supplementation', style: 'process', sub: 'BalanCD HEK293 at 2–5×10^6 cells/mL · 3–8× titer increase',
+    tooltip: { title: 'Fed-Batch',
+      cpp: ['BalanCD supplement timing: at 2–5×10^6 cells/mL'],
+      cqa: ['Titer ≥1×10^13 vg/mL crude at harvest (ddPCR)'],
+      pat: ['ddPCR at-line daily from t+24h'] }},
+  { title: 'Harvest at 42–48 h Post-Induction', style: 'product', sub: 'Viability 65–75% · Target: ≥1×10^14 vg/L · 2×10^15 vg total (20 L)',
+    tooltipClass: 'sf-cqa',
+    tooltip: { title: 'Harvest Decision',
+      cpp: ['Harvest window: 42–48 h post-induction (peak titer confirmed by daily ddPCR)', 'Viability 65–75% acceptable range'],
+      cqa: ['Crude titer ≥1×10^13 vg/mL (ddPCR)', 'Viability 65–75% (below 65% = investigate induction timing)'],
+      pat: ['ddPCR crude titer (definitive harvest timing)', 'Vi-CELL XR / NucleoCounter (viability)', 'AI soft-sensor titer prediction (real-time)'],
+      equip: ['Pall Allegro STR harvest port', 'Closed system transfer to lysis vessel'] }},
+];}
+
+function sfHarvest() { return [
+  { title: 'Combined Harvest (Cell Pellet + Conditioned Media)', style: 'io', sub: 'Pools intracellular + secreted AAV to maximize yield' },
+  { title: 'Chemical Lysis', style: 'process', sub: '500 mM NaCl + 0.5% Triton X-100 (REACH comparability study planned)',
+    tooltip: { title: 'Chemical Lysis',
+      cpp: ['NaCl: 500 mM (supports Salt-Tolerant Benzonase activity)', 'Detergent: 0.5% Triton X-100 (REACH: Deviron C16 alternative under evaluation)'],
+      cqa: ['Complete cell disruption confirmed by turbidity reduction'],
+      equip: ['Temperature-controlled mixing vessel'] }},
+  { title: 'Benzonase Nuclease Treatment', style: 'process', sub: '50 U/mL · 37°C · 1 h · MgSO4 37.5 mM',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Benzonase Treatment',
+      cpp: ['Benzonase (Salt-Tolerant): 50 U/mL; active at ≥500 mM NaCl (>90% activity)', 'Contact time: 1 h at 37°C (vs 2 h for transient — lower nucleic acid load)', 'MgSO4: 37.5 mM (enzyme cofactor; prevents AAV aggregation with negatively charged debris)'],
+      cqa: ['Residual host cell DNA ≤10 ng/dose; fragments <200 bp (FDA/WHO spec)'],
+      pat: ['qPCR (at-line): residual DNA quantification after digestion'],
+      equip: ['37°C mixing vessel with temp control'] }},
+  { title: 'Depth Filtration (Two-Stage)', style: 'process', sub: '0.55–9 µm then 0.1–0.8 µm · 170 L/m²',
+    tooltip: { title: 'Depth Filtration',
+      cpp: ['Stage 1: 0.55–9 µm depth filter; loading: 170 L/m²', 'Stage 2: 0.1–0.8 µm secondary filter'],
+      cqa: ['Post-filtration turbidity <5 NTU (chromatography readiness)', 'Capsid recovery ~90%'],
+      pat: ['Nephelometry at-line: BMG LABTECH NEPHELOstar Plus (<5 NTU gate)'],
+      equip: ['Sartorius Sartopore 2', 'Repligen KrosFlo TFDF'] }},
+  { type: 'split',
+    left:  { title: 'Filtrate → TFF Step 1', style: 'product', sub: '~90% capsid recovery' },
+    right: { title: 'Filter Cake → Waste', style: 'waste', sub: 'Cell debris, HCP, digested DNA' }},
+];}
+
+function sfTFF1() { return [
+  { title: 'Load Clarified Harvest onto TFF System', style: 'io', sub: 'GE Pellicon 3 · 100–300 kDa MWCO hollow-fiber',
+    tooltip: { title: 'TFF-1 Setup',
+      equip: ['GE Pellicon 3 hollow-fiber cassette (100–300 kDa MWCO)', 'Peristaltic pump with pressure transducers'] }},
+  { title: 'Ultrafiltration — 5–10× Concentration', style: 'process', sub: 'TMP: 15–20 psi (CPP)',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Ultrafiltration',
+      cpp: ['TMP: 15–20 psi (prevents capsid aggregation from excessive shear)', 'Concentration factor: 5–10× volume reduction'],
+      cqa: ['Capsid recovery ≥90% (ddPCR retentate + permeate)'],
+      pat: ['ddPCR step yield', 'A280 protein concentration'] }},
+  { title: 'Diafiltration — Buffer Exchange (3–6 volumes)', style: 'process', sub: '20 mM Tris, 100–150 mM NaCl, pH 7.5 → AEX load buffer',
+    tooltipClass: 'sf-pat',
+    tooltip: { title: 'Diafiltration',
+      cpp: ['Buffer: 20 mM Tris, 100–150 mM NaCl, pH 7.5 (note: NOT 200 mM — must achieve ≤5 mS/cm conductivity for AEX binding)', '3–6 diafiltration volumes'],
+      cqa: ['Final conductivity ≤5 mS/cm (at-line conductivity meter — go/no-go for AEX load)', 'pH 7.5 ± 0.1'],
+      pat: ['Conductivity meter (at-line: confirms ≤5 mS/cm before AEX)', 'DLS: no aggregation peaks >200 nm'],
+      equip: ['GE Pellicon 3; peristaltic pump'] }},
+  { type: 'split',
+    left:  { title: 'Retentate → AEX Load', style: 'product', sub: 'AAV2 in load buffer; ≤5 mS/cm' },
+    right: { title: 'Permeate → Waste', style: 'waste', sub: 'HCP, small DNA, media' }},
+];}
+
+function sfAEX() { return [
+  { title: 'Column Equilibration', style: 'process', sub: '20 mM Tris, 50 mM NaCl, pH 7.5 · 5 CV',
+    tooltip: { title: 'AEX Equilibration',
+      equip: ['AKTA FPLC with HiTrap Q HP (lab) or CIMmultus QA monolith (GMP)', 'Inline UV A260/A280/A320 + conductivity + pressure monitors'] }},
+  { title: 'Load + Bind', style: 'process', sub: 'pH 7.5 · ≤5 mS/cm · AAV2 binds AEX resin',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'AEX Load + Bind',
+      cpp: ['Load pH: 7.5 ± 0.1 (stable AAV2 binding; -20% peak loss at 8h vs -59% at pH 9; Khanal et al., 2023)', 'Load conductivity: ≤5 mS/cm (confirmed by at-line meter before loading)'],
+      cqa: ['AAV2 capsids bind quantitatively at pH 7.5'],
+      pat: ['Inline UV A260 (breakthrough monitoring)', 'Inline conductivity (confirms load conditions)'] }},
+  { title: 'Wash — HCP + DNA Removal', style: 'process', sub: '20 mM Tris, 150 mM NaCl, pH 7.5 · 3–5 CV',
+    tooltip: { title: 'AEX Wash',
+      cpp: ['Wash: 20 mM Tris, 150 mM NaCl, pH 7.5 (3–5 CV minimum)', 'Optional wash 2: +25 mM NaCl increments if HCP breakthrough detected by at-line BCA'],
+      cqa: ['HCP ≤1 ng/dose (at-line BCA)', 'Residual DNA ≤10 ng/dose (at-line Picogreen)'],
+      pat: ['Inline UV A260/A280 (HCP elution visible at A280)', 'At-line BCA protein assay', 'At-line Picogreen assay'] }},
+  { title: 'Elution — AAV2 Product', style: 'product', sub: '20 mM Tris, 300–500 mM NaCl, pH 7.5 (step gradient)',
+    tooltipClass: 'sf-cqa',
+    tooltip: { title: 'AEX Elution',
+      cpp: ['Elution: 20 mM Tris, 300–500 mM NaCl, pH 7.5 (step gradient — reproducible at scale)', 'Pool decision: inline A260/A280 peak shape; collect when A260/A280 ≥1.1'],
+      cqa: ['A260/A280 ≥1.1 in elution pool (full capsid enrichment indicator)', 'VP1:VP2:VP3 ~1:1:10 (SDS-PAGE silver stain)', 'Purity ~80–85% post-AEX'],
+      pat: ['Inline UV A260/A280 (real-time peak shape guides pooling)', 'At-line ddPCR (step yield ≥80%)', 'At-line SDS-PAGE silver stain (VP ratio)'],
+      equip: ['AKTA FPLC with fraction collector'] }},
+  { type: 'split',
+    left:  { title: 'Eluate Pool → Ultracentrifugation', style: 'product', sub: '~80% vg recovery · ~1.2×10^15 vg' },
+    right: { title: 'Flow-through + Wash → Waste', style: 'waste', sub: 'HCP, DNA, aggregates' }},
+];}
+
+function sfUltracentrifugation() { return [
+  { title: 'Iodixanol Gradient Preparation', style: 'process', sub: '15% / 25% / 40% / 60% w/v in PBS pH 7.3 · Phenol red in 40% layer',
+    tooltip: { title: 'Gradient Setup',
+      equip: ['OptiMATE gradient maker (Beckman Coulter)', 'Ultra-clear centrifuge tubes (Beckman)', 'Beckman Optima XL-100K ultracentrifuge'] }},
+  { title: 'Ultracentrifugation', style: 'process', sub: '350,000 × g · 90 min · 10°C',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Ultracentrifugation CPPs',
+      cpp: ['Speed: 350,000 × g (CPP)', 'Duration: 90 min (CPP)', 'Temperature: 10°C (CPP)', 'Gradient: 15/25/40/60% iodixanol step; phenol red in 40% layer for visual interface ID'],
+      cqa: ['Full capsids band at 40/60% interface (density 1.23–1.30 g/mL)', 'Empty capsids above 40% layer (density 1.15–1.23 g/mL) — discarded'],
+      equip: ['Beckman Optima XL-100K; Ti-70 rotor', 'Multiple sequential rotor runs at 10–50 L scale (~16+ h total — process bottleneck)'] }},
+  { title: 'Fraction Collection (40/60% Interface)', style: 'product', sub: 'Phenol red confirms correct layer · Syringe or bottom puncture collection',
+    tooltipClass: 'sf-cqa',
+    tooltip: { title: 'Fraction Collection',
+      cqa: ['Full capsid purity ≥90% post-step (AUC)', 'Full:empty ratio target ≥10:1 post-polishing'],
+      pat: ['AUC (analytical ultracentrifugation): definitive full:empty ratio', 'TEM: capsid morphology + integrity; 22–25 nm diameter', 'DLS: PDI <0.2; monodisperse peak'] }},
+  { type: 'split',
+    left:  { title: '40/60% Interface → TFF-2 Polishing', style: 'product', sub: '70–75% full vg · ~8.5×10^14 vg' },
+    right: { title: 'Empty Capsids + Waste Layers', style: 'waste', sub: 'Iodixanol solutions, HCP, empty capsids' }},
+];}
+
+function sfPolishing() { return [
+  { title: 'TFF-2: Iodixanol Removal + Buffer Exchange', style: 'process', sub: '100 kDa MWCO hollow-fiber · TMP ≤5 psi · ≥8 diavolumes',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'TFF-2 — Critical Parameters',
+      cpp: ['TMP: ≤5 psi (CRITICAL — higher TMP causes AAV2 aggregation via shear)', 'Diafiltration: ≥8 volumes; extend to 12 if iodixanol >0.5% after 8 vol', 'Buffer: PBS pH 7.3 → formulation buffer (180 mM NaCl, 10 mM NaPO4, 0.001% P188, pH 7.3)'],
+      cqa: ['Residual iodixanol <0.5% w/v (refractometry)', 'Aggregates ≤2% (DLS; PDI <0.1)'],
+      pat: ['Refractometry: iodixanol clearance monitoring per diafiltration cycle', 'DLS: aggregate content ≤2% and PDI <0.1'] }},
+  { title: 'SEC Polishing: Aggregate Removal', style: 'process', sub: 'Superdex 200 HiLoad · Fractions 4–6 (AAV2 monomer Rh ≈18 nm)',
+    tooltipClass: 'sf-pat',
+    tooltip: { title: 'SEC Polishing',
+      cqa: ['A260/A280 ≥1.1 in SEC pool', 'Aggregates <2% (NTA PDI <0.1)'],
+      pat: ['NTA: PDI <0.1; monodisperse AAV2 confirmed', 'Inline A260/A280 (AKTA): pool fractions 4–6'],
+      equip: ['Superdex 200 HiLoad 16/600 (Cytiva)', 'AKTA FPLC; Malvern Zetasizer DLS; NTA instrument'] }},
+  { type: 'split',
+    left:  { title: 'Monodisperse AAV2 Pool → Sterile Filtration', style: 'product', sub: '~81% combined · ~6.9×10^14 vg' },
+    right: { title: 'Aggregates + Iodixanol → Waste', style: 'waste', sub: 'TFF permeate; SEC excluded fractions' }},
+];}
+
+function sfSterileFiltration() { return [
+  { title: 'Pre-Filtration Integrity Test', style: 'qc', sub: 'Bubble point test — Sartorius Sartopore 2 (0.22 µm PES)',
+    tooltip: { title: 'Filter Integrity',
+      cpp: ['Bubble point test BEFORE and AFTER filtration (CPP — mandatory GMP requirement)'],
+      equip: ['Sartorius Sartopore 2, 0.22 µm PES, single-use capsule'] }},
+  { title: '0.22 µm Sterile Filtration', style: 'process', sub: 'PES membrane · Low protein binding · 90–100% recovery',
+    tooltip: { title: 'Sterile Filtration',
+      cpp: ['Filter: 0.22 µm PES (low protein binding)'],
+      cqa: ['Sterility of filtrate (no bioburden passage)', 'Capsid recovery 90–100%'],
+      equip: ['Sartorius Sartopore 2 PES 0.22 µm single-use capsule'] }},
+  { title: 'DS Release Testing (14–21 days)', style: 'qc', sub: 'Full ICH Q6B panel · ddPCR · AUC · Potency · LAL · Sterility',
+    tooltipClass: 'sf-cqa',
+    tooltip: { title: 'DS Release Panel',
+      cqa: ['Genome titer: ddPCR ≥1×10^13 vg/mL', 'Full:empty ratio: AUC ≥10:1', 'Potency: RPE transduction + RPE65 WB ≥1 TU/100 vg', 'HCP: ELISA ≤1 ng/dose', 'Residual DNA: qPCR ≤10 ng/dose; <200 bp', 'Endotoxin: LAL ≤1 EU/mL', 'Sterility: USP <71>', 'pH: 7.3±0.2; Osmolality: 285–315 mOsm/kg'],
+      pat: ['ddPCR, AUC, TEM, LAL, MFI, SDS-PAGE, WB (RPE65), Mycoplasma, RCA'] }},
+  { type: 'split',
+    left:  { title: 'PASS → Fill/Finish', style: 'product', sub: 'QP approves DS for DP manufacturing' },
+    right: { title: 'FAIL (OOS) → Investigate', style: 'waste', sub: 'OOS investigation; potential batch rejection' }},
+];}
+
+function sfFillFinish() { return [
+  { title: 'DS Dilution to Target Concentration', style: 'process', sub: '5×10^12 vg/mL in formulation buffer (180 mM NaCl / 10 mM NaPO4 / 0.001% P188 pH 7.3)',
+    tooltip: { title: 'Formulation',
+      cpp: ['Target: 5×10^12 vg/mL ±20%', 'Formulation buffer: 180 mM NaCl, 10 mM NaPO4, 0.001% Poloxamer 188, WFI, pH 7.3 (identical to Luxturna — ICH Q5E comparability)'],
+      cqa: ['Target concentration 5×10^12 ±20% vg/mL (ddPCR confirmed)'],
+      pat: ['ddPCR: final DP titer confirmation'] }},
+  { title: 'Aseptic Fill into Type I Glass Vials', style: 'process', sub: '0.5 mL per 2 mL borosilicate vial · ISO 5 laminar airflow · Nitrogen overlay',
+    tooltipClass: 'sf-cpp',
+    tooltip: { title: 'Aseptic Fill',
+      cpp: ['Fill volume: 0.5 mL ±2% (100% gravimetric IPC)', 'Environment: ISO 5 laminar airflow (Grade A)', 'N2 overlay at stoppering (oxidation prevention)', 'Stopper: chlorobutyl rubber (gamma-irradiated)'],
+      cqa: ['Fill volume accuracy ±2%', 'Container closure integrity (CCI) 100% tested', 'Appearance: clear, colorless'],
+      pat: ['100% gravimetric IPC (automated balance)', 'Environmental monitoring: particle count + bioburden per session'],
+      equip: ['Automated aseptic fill line', 'ISO 5/7 GMP suite', 'Gravimetric IPC system'] }},
+  { title: 'Stopper + Aluminum Crimp Seal', style: 'process', sub: 'Validated torque specification · Nitrogen atmosphere maintained' },
+  { title: '100% Automated Visual Inspection (AVI)', style: 'qc', sub: 'Visible particles · Fill level · Stopper/crimp defects',
+    tooltip: { title: 'AVI + DP Release',
+      cqa: ['Appearance: clear, colorless, essentially particle-free', 'Sub-visible particles: MFI USP <787>/<788>'],
+      equip: ['AVI system (automated)', 'MFI (micro-flow imaging)'] }},
+  { title: 'Filled Drug Product', style: 'product', sub: '~3,000–4,000 vials/batch · ≤−65°C storage · 21-month shelf life' },
+];}
+
+function sfRelease() { return [
+  { title: 'DP Release Testing', style: 'qc', sub: 'ddPCR · AUC · Potency · Sterility · LAL · MFI · pH · Osmolality',
+    tooltipClass: 'sf-cqa',
+    tooltip: { title: 'DP Release Panel',
+      cqa: ['Genome titer: ddPCR 5×10^12 ±20% vg/mL', 'Full:empty: AUC ≥10:1', 'Potency: RPE65 transduction + WB (representative retest)', 'Sterility: USP <71>', 'Endotoxin: LAL ≤1 EU/mL', 'pH: 7.3±0.2; Osmolality: 285–315 mOsm/kg', 'Sub-visible: MFI USP <787>/<788>', 'CCI: 100%'],
+      pat: ['AVI 100% vials', 'MFI sub-visible', 'ddPCR DP titer', 'AUC full:empty'] }},
+  { title: 'QP Batch Release Decision', style: 'qc', sub: 'All CQAs met · Batch records complete · ICH Q5E comparability data reviewed',
+    tooltip: { title: 'QP Release',
+      cqa: ['All DP release specifications met', 'Batch records reviewed and signed', 'ICH Q5E comparability dossier acceptable'],
+      equip: ['QP signature (mandatory GMP requirement)', 'Certificate of Analysis issued'] }},
+  { type: 'split',
+    left:  { title: 'QP RELEASE → Cold-Chain Distribution', style: 'product', sub: '≤−65°C dry ice · GDP compliant · CoA issued' },
+    right: { title: 'OOS/Deviation → Investigate', style: 'waste', sub: 'OOS investigation → reject or rework' }},
+  { title: 'GDP Cold-Chain Distribution', style: 'product', sub: '≤−65°C validated dry-ice shipper · ≥72 h transit · Temp logger in each shipment · Subretinal administration site' },
+];}
+
+/* ═══════════════════════════════════════════
+   PROFIT / CASH FLOW CHART (Chart.js)
+   SuperPro Designer–style cumulative cash flow
+   Capital expenditure front-loaded, then
+   revenue accumulates over batches
+═══════════════════════════════════════════ */
+function renderProfitChart() {
+  const canvas = document.getElementById('profit-chart');
+  if (!canvas) return;
+
+  // Financial model parameters (from report + literature)
+  const FCI         = 29;    // $M Fixed Capital Investment (midpoint)
+  const RnD         = 20;    // $M R&D + cell line engineering (one-time)
+  const startupCost = 5;     // $M startup + validation cost (ICH Q5C)
+  const workingCap  = 3;     // $M working capital
+  const totalCapex  = FCI + RnD + startupCost + workingCap; // ~57 M
+
+  // Operating assumptions
+  const batchesPerYear    = 4;
+  const batchCOGS         = 0.9;   // $M per batch (fully-loaded, plasmid-free)
+  const pricePerPatient   = 300;   // $K per patient (bilateral)
+  const patientsPerBatch  = 750;   // patients serviced per batch (3000 doses / 4 eyes avg bilateral+unilateral mix)
+  const revenuePerBatch   = (pricePerPatient * patientsPerBatch) / 1000; // $M
+  const profitPerBatch    = revenuePerBatch - batchCOGS;
+
+  // Build cumulative cash flow over 40 batches (~10 years)
+  const labels = [];
+  const cumulativeCashFlow = [];
+  const batchExpenses = [];
+  const batchRevenues = [];
+  const capexLine = [];
+
+  let cumulative = -totalCapex; // Start negative (capital outlay)
+
+  for (let b = 0; b <= 40; b++) {
+    labels.push(b === 0 ? 'Pre-production' : `Batch ${b}`);
+    if (b === 0) {
+      cumulativeCashFlow.push(-totalCapex);
+      batchExpenses.push(-totalCapex);
+      batchRevenues.push(0);
+      capexLine.push(-totalCapex);
+    } else {
+      cumulative += profitPerBatch;
+      cumulativeCashFlow.push(+cumulative.toFixed(1));
+      batchExpenses.push(-batchCOGS);
+      batchRevenues.push(+revenuePerBatch.toFixed(1));
+      capexLine.push(-totalCapex);
+    }
+  }
+
+  // Find breakeven batch
+  const breakEvenBatch = cumulativeCashFlow.findIndex(v => v >= 0);
+
+  const Chart = window.Chart;
+  if (!Chart) return;
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Cumulative Cash Flow ($M)',
+          data: cumulativeCashFlow,
+          borderColor: '#1B4F8A',
+          backgroundColor: cumulativeCashFlow.map(v => v >= 0
+            ? 'rgba(21,128,61,.08)'
+            : 'rgba(185,28,28,.08)'),
+          borderWidth: 2.5,
+          pointRadius: cumulativeCashFlow.map((v,i) => i === breakEvenBatch ? 7 : (i % 4 === 0 ? 3 : 1)),
+          pointBackgroundColor: cumulativeCashFlow.map((v,i) => i === breakEvenBatch ? '#D97706' : '#1B4F8A'),
+          fill: true,
+          tension: .35,
+          order: 1,
+        },
+        {
+          label: 'Batch Revenue ($M)',
+          data: batchRevenues,
+          borderColor: '#15803D',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          tension: 0,
+          order: 2,
+        },
+        {
+          label: 'Batch COGS ($M, negative)',
+          data: batchExpenses.map((v,i) => i === 0 ? null : v),
+          borderColor: '#B91C1C',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [2, 3],
+          pointRadius: 0,
+          tension: 0,
+          order: 3,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1E293B',
+          titleColor: '#94A3B8',
+          bodyColor: '#E2E8F0',
+          borderColor: '#334155',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            title: ctx => ctx[0].label,
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if (v === null) return null;
+              return ` ${ctx.dataset.label}: $${v >= 0 ? '+' : ''}${v.toFixed(1)}M`;
+            },
+            afterBody: ctx => {
+              const i = ctx[0].dataIndex;
+              if (i === breakEvenBatch) return ['', '  Break-even reached'];
+              return [];
+            }
+          }
+        },
+        annotation: {
+          annotations: {
+            breakEvenLine: {
+              type: 'line',
+              yMin: 0, yMax: 0,
+              borderColor: '#D97706',
+              borderWidth: 1.5,
+              borderDash: [6, 3],
+              label: {
+                content: 'Break-even',
+                enabled: true,
+                position: 'start',
+                color: '#78350F',
+                backgroundColor: '#FEF3C7',
+                padding: { x: 6, y: 3 },
+                font: { size: 9, weight: 'bold' }
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,.04)' },
+          ticks: {
+            font: { size: 9 },
+            color: '#6B7280',
+            maxTicksLimit: 10,
+            callback: (val, i) => i % 4 === 0 ? labels[i] : '',
+          }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,.05)' },
+          ticks: {
+            font: { size: 9 },
+            color: '#6B7280',
+            callback: v => `$${v}M`
+          },
+          title: {
+            display: true,
+            text: 'USD Millions',
+            font: { size: 9 },
+            color: '#9CA3AF'
+          }
+        }
+      }
+    }
+  });
+}
+</script>
+
+<!-- Chart.js + annotation plugin (loaded before renderProfitChart can be called) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+</body>
+</html>
