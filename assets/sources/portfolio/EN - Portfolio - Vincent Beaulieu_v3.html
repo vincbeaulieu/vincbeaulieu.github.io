@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EN - VINCENT BEAULIEU</title>
+<meta name="author" content="Vincent Beaulieu">
+<!--
+  Editable source of "EN - Portfolio - Vincent Beaulieu_v3.pdf".
+  v2 (October 2026): rebuilt from the v1 PDF (Word export, June 2025) and added the
+  Cyberna / McGill M.Eng. Biomanufacturing entry at the top of Professional Experiences.
+  v3 (October 2026): Concordia B.ENG. lines swapped (most recent first).
+  Render with build_pdf.js (Chromium / Playwright). Fonts: Liberation Serif is
+  metric-compatible with Times New Roman, so line breaks match the original.
+-->
+<style>
+  @page {
+    size: A4;
+    margin: 36pt 34.3pt 49pt 36.6pt;
+    @bottom-right {
+      content: counter(page);
+      font-family: "Times New Roman", "Liberation Serif", serif;
+      font-size: 12pt;
+      vertical-align: top;
+      padding-top: 0;
+    }
+  }
+  :root {
+    --navy: #153D63;      /* section headings, job titles */
+    --teal: #156082;      /* academic roles */
+    --link: #467886;      /* hyperlinks */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body {
+    font-family: "Times New Roman", "Liberation Serif", serif;
+    font-size: 11pt;
+    line-height: 14.5pt;
+    color: #000;
+    font-kerning: none;
+    font-variant-ligatures: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  a { color: var(--link); text-decoration: underline; }
+  b, strong { font-weight: bold; }
+
+  /* ---------- page structure ---------- */
+  .page-break { break-before: page; }
+
+  /* ---------- header ---------- */
+  header { text-align: center; }
+  header h1 { font-size: 22.1pt; line-height: 24pt; margin: 0 0 4pt; font-weight: bold; letter-spacing: 0; }
+  header .oiq { font-size: 12pt; line-height: 15pt; font-weight: bold; font-style: italic; color: var(--navy); margin: 0; }
+  header .contact { margin: 1pt 0 0; }
+  header .flag { height: 6.6pt; width: auto; vertical-align: -0.3pt; margin-right: 4.5pt; }
+
+  /* ---------- section headings ---------- */
+  h2 {
+    font-size: 13.9pt;
+    line-height: 16pt;
+    color: var(--navy);
+    font-weight: bold;
+    margin: 0 0 7.5pt;
+    padding: 0 0 2.5pt;
+    border-bottom: 1.4pt solid #000;
+    break-after: avoid;
+  }
+  header + section > h2 { margin-top: 16pt; }
+  section + section > h2 { margin-top: 12pt; }
+  section.tight-top > h2 { margin-top: 2pt; }
+  section.page-break > h2 { margin-top: 0; }
+
+  /* ---------- skills tables ---------- */
+  table.skills { border-collapse: collapse; width: 100%; margin: 0 0 0; }
+  table.skills th {
+    width: 127.7pt; text-align: left; vertical-align: middle; font-weight: bold;
+    white-space: nowrap; padding: 1.5pt 0;
+  }
+  table.skills td { vertical-align: middle; padding: 1.5pt 0; }
+  table.skills.airy th, table.skills.airy td { padding-top: 5.5pt; padding-bottom: 5.5pt; }
+
+  /* ---------- education ---------- */
+  .edu { padding-left: 28.3pt; }
+  .edu p { margin: 0; }
+  .edu .school { font-weight: bold; }
+  .edu .school-block { break-inside: avoid; }
+  .edu .school-block + .school-block { margin-top: 14.5pt; }
+  .edu .hang { padding-left: 14pt; text-indent: -14pt; }
+
+  /* ---------- experience entries ---------- */
+  .entry { break-inside: avoid; }
+  .entry + .entry { margin-top: 8.5pt; }
+  .entry.loose + .entry.loose { margin-top: 12.5pt; }
+  .role { font-size: 11pt; line-height: 15pt; }
+  .role .title { font-size: 12pt; font-weight: bold; color: var(--navy); }
+  .acad-role { font-size: 12pt; line-height: 15.5pt; font-weight: bold; }
+  .acad-role .title { color: var(--teal); }
+  .project { font-size: 12pt; line-height: 15.5pt; font-weight: bold; }
+  .org { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
+  .org .date, .date { font-weight: bold; font-style: italic; white-space: nowrap; }
+  .bi { font-weight: bold; font-style: italic; }
+  .navy { color: var(--navy); }
+  .label { font-weight: bold; padding-left: 18pt; }
+  .tech { padding-left: 18pt; }
+
+  /* ---------- bullet lists ---------- */
+  ul { list-style: none; margin: 0; padding: 0 0 0 36pt; }
+  ul.nested { padding-left: 54pt; }
+  ul li { position: relative; }
+  ul li::before {
+    content: "\2022";
+    position: absolute;
+    left: -18pt;
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 11pt;
+  }
+  li.dated { display: flex; justify-content: space-between; gap: 12pt; }
+  li.dated span:first-child { font-style: italic; }
+
+  /* ---------- training ---------- */
+  .group + .group { margin-top: 14.5pt; }
+  .group .label { margin: 0; }
+
+  /* ---------- media ---------- */
+  .media { text-align: center; padding-left: 17pt; }
+  .media p { margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- =============================== PAGE 1 =============================== -->
+<header>
+  <h1>VINCENT BEAULIEU</h1>
+  <p class="oiq">Member of the Ordre des ingénieurs du Québec (OIQ)</p>
+  <p class="contact"><img class="flag" src="flag_ca.png" alt="Canada">+1 (514) 710-7193 | <img class="flag" src="flag_fr.png" alt="France">+33 6 38 05 61 26 | <a href="mailto:vincent.beaulieu@mail.com">vincent.beaulieu@mail.com</a></p>
+</header>
+
+<section>
+  <h2>Data Science Skills</h2>
+  <table class="skills">
+    <tr><th>Programming<br>Languages</th><td>C, C++, C#, Go, Java, JavaScript, Kotlin, MATLAB (Simulink), Objective-C, Python, R, Ruby</td></tr>
+    <tr><th>Web Development</th><td>CSS, Django, Flask, HTML, JavaScript, Node.js, React.js</td></tr>
+    <tr><th>Database &amp; Data<br>Management</th><td>SQL, mySQL, NoSQL, Snowflake, SnowSQL, Oracle, Relational Databases, Data Lake, Data Warehouse, Data Modeling, Data Governance, Data Security</td></tr>
+    <tr><th>Data Engineering</th><td>Apache Spark, Apache Kafka, Azure Databricks, Hadoop, ETL &amp; ELT, Data Pipelines, Big Data Processing</td></tr>
+    <tr><th>AI Frameworks &amp; Data<br>Science</th><td>scikit-learn, TensorFlow, PyTorch, Huggingface Transformers, Ollama, AI/ML Techniques, Statistics, Data Visualization (Tableau, Power BI, Alteryx)</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Software Development Skills</h2>
+  <table class="skills">
+    <tr><th>Development<br>Methodologies</th><td>Agile (SCRUM, Kanban), CI/CD, Version Control (Git)</td></tr>
+    <tr><th>Cloud &amp; DevOps</th><td>Docker, Kubernetes, Kubeflow, Azure DevOps, Terraform, GCP, AWS</td></tr>
+    <tr><th>Software Design</th><td>OOP, Design Patterns, RESTful API Design, Technical Documentation, MVC (Model View Controller), Microservices</td></tr>
+    <tr><th>IDEs</th><td>CLion, Colab, Eclipse, IntelliJ, JupyterLab, Pycharm, Visual Studio, Xcode</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Embedded Systems Skills</h2>
+  <table class="skills airy">
+    <tr><th>Programming &amp; Scripting</th><td>Ada, Rust, Assembly (ASM, NASM), Shell (bash, batch, csh, PowerShell, sh, zsh)</td></tr>
+    <tr><th>Systems &amp; Platforms</th><td>QNX (RTOS), FPGA, Arduino, Raspberry Pi, Intel Edison, NVIDIA Jetson Nano</td></tr>
+    <tr><th>HDL &amp; Simulation Tools</th><td>VHDL, Verilog, Cadence, ModelSim, Synopsys, Vivado, Xilinx</td></tr>
+    <tr><th>CAD &amp; PCB Design Tools</th><td>AutoCAD, Fusion 360, KiCad, PSpice</td></tr>
+    <tr><th>Processor Architectures,<br>ISAs, and SoCs</th><td>CISC (Motorola m68k, x86, x64), RISC (ARM Cortex-A, Cortex-M, AVR, Broadcom MIPS, PowerPC, RISC-V)</td></tr>
+  </table>
+</section>
+
+<section class="tight-top">
+  <h2>Languages</h2>
+  <table class="skills airy">
+    <tr><th></th><td>Bilingual <b>French</b> and <b>English</b> (mother tongues)</td></tr>
+  </table>
+</section>
+
+<section class="tight-top">
+  <h2>Educations</h2>
+  <div class="edu">
+    <!-- NEW in v2 (listed most recent first) -->
+    <div class="school-block">
+      <p class="school">McGill University – Montréal, Québec</p>
+      <p>(2025 – expected 2027) <b>M.ENG.</b> Biological and Biomedical Engineering, Biomanufacturing (non-thesis)</p>
+      <p><b>CGPA:</b> 4.00/4.00</p>
+      <p><b>Industrial internship:</b> Biocomputing Engineer, Cyberna (May – December 2026)</p>
+      <p class="hang"><b>Relevant courses:</b> Cell Culture Engineering; cGMP and Regulation; Downstream Processing; Process Analytical Technologies and Data Science; Synthetic Biology; RNA Biologics; Vaccine Bioprocessing; Gene and Cell Therapy Viral Vectors</p>
+    </div>
+    <div class="school-block">
+      <p class="school">Concordia University – Montréal, Québec</p>
+      <p>(2020 – 2025) <b>B.ENG.</b> Computer Engineering, <b>Option:</b> Biological and Biomedical Engineering (BME)</p>
+      <p>(2017 – 2020) <b>B.ENG.</b> Industrial Engineering (Unfinished)</p>
+    </div>
+    <div class="school-block">
+      <p class="school">Collège Lionel-Groulx – Sainte-Thérèse, Québec</p>
+      <p>(2014 – 2017) <b>DEC.</b> Natural Science</p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================== PROFESSIONAL EXPERIENCES =============================== -->
+<section>
+  <h2>Professional Experiences</h2>
+
+  <!-- NEW in v2 -->
+  <div class="entry">
+    <div class="role"><span class="title">Biocomputing Engineer</span> | Internship <b>(McGill M.Eng. Biomanufacturing)</b></div>
+    <div class="org"><span><span class="bi">Cyberna</span> | Montpellier, France</span><span class="date">May 2026 – December 2026</span></div>
+    <ul>
+      <li>Designed and built an end-to-end preprocessing and analysis pipeline for LC-MS/MS nucleoside data supporting blood-based early cancer detection. It has eight steps, from raw peak areas to candidate classification models, and every value traces back to the raw measurement through formulas.</li>
+      <li>Implemented tree-based models for feature selection and modelling, including Boruta and random forest.</li>
+      <li>Built a test-based decision rule for missing values that replaces an arbitrary cut-off: tests for whether values are missing at random, Cramér’s V, Cochran-Mantel-Haenszel and Firth logistic regression.</li>
+      <li>Ran a confounding audit that showed clinical groups were inseparable from sample-collection factors (tube type, collection site). This prevented false diagnostic claims and changed the study’s conclusions and recommendations for the next cohort.</li>
+      <li>Cut technical noise by about one third on quality-control samples, using normalization to internal standards, robust QC and batch-effect correction.</li>
+      <li>Prototyped a paired-sample correction for bias between blood-collection tubes in KNIME, and assessed its limits (statistical power, validation needs).</li>
+      <li>Wrote and maintained the pipeline’s ~100-page technical report through several review cycles with scientific and clinical stakeholders. Revisions were fully traceable, following design-control practice (ISO 13485).</li>
+      <li>Designed a governed, AI-assisted revision framework built with Claude. AI-proposed changes are tracked and reversible, verified by deterministic checks and independent review, and every failure is logged and fed into a corrective-and-preventive (CAPA-style) loop.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="role"><span class="title">Software Developer &amp; Architect</span> | Temporary full-time <b>(37.5 hours / week)</b></div>
+    <div class="org"><span><span class="bi">D360 Consulting</span> | Montréal, Québec</span><span class="date">October 2023 – February 2024</span></div>
+    <div class="label">Impacts:</div>
+    <ul class="nested">
+      <li>Complete automation of the production of their digital product</li>
+      <li><b>30x increase</b> of the initial production rate (<b>from 8 to 225 daily reports</b>)</li>
+      <li>Freeing up human resources to focus on business development</li>
+    </ul>
+    <div class="label">Accomplishments:</div>
+    <ul class="nested">
+      <li>Development of architectures and workflows on N8N for automation.</li>
+      <li>Implementation of artificial intelligence solutions, OpenAI Whisper and Azure GPT.</li>
+      <li>Integration with Google Cloud Platform, Firebase, Zoho, Clickup, and PowerBI.</li>
+      <li>Python and JavaScript development (Backend). With Postman as an API integration testing tool.</li>
+      <li>Documentation of the application of security and data governance practices (Bill 25).</li>
+      <li>Implementation of secure ETL/ELT solutions that comply with Law 25.</li>
+      <li>Work in an AGILE CI/CD development environment with SCRUM methodology.</li>
+    </ul>
+    <div class="label">Technologies:</div>
+    <div class="tech">Python, JavaScript, OpenAI Whisper, Azure GPT, N8N, ClickUp, Google Cloud Platform, Firebase, Zoho Analytics, Postman, Bill 25 Compliance, AGILE (SCRUM), ETL/ELT</div>
+  </div>
+
+  <div class="entry">
+    <div class="role"><span class="title">Teaching Assistant</span> | Part-time contract <b>(7 hours / week)</b></div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">September 2022 – December 2023</span></div>
+    <ul>
+      <li>Student support, exam marking and assignment correction.</li>
+      <li>Assistance to teachers in the preparation of teaching materials and laboratory sessions.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="role"><span class="title">Cloud, Big Data &amp; AI Developer</span> | Permanent full-time <b>(37.5 hours / week)</b></div>
+    <div class="org"><span><span class="bi">Progranova Inc.</span>| Laval, Québec</span><span class="date">June 2020 – January 2023</span></div>
+    <div class="label">Accomplishments:</div>
+    <ul class="nested">
+      <li>Design and development of data processing and analysis solutions.</li>
+      <li>Implement storage and machine learning solutions on AWS.</li>
+      <li>Management of the Snowflake platform, and Integration of Hadoop, Spark, Kafka, Azure Databricks.</li>
+      <li>Configure, monitor, and maintain data warehouses, tables, and views.</li>
+      <li>Optimize system performance and stability.</li>
+      <li>Training and support to users/customers on best practices in Big Data and AI.</li>
+    </ul>
+    <div class="label">Technologies:</div>
+    <div class="tech">Python (scikit-learn, tensorflow, pandas), Hadoop, Apache Spark, Apache Kafka, AWS (EC2, S3, SageMaker), GCP (Compute Engine, Cloud Storage), Azure Databricks, Alteryx, Snowflake, SnowSQL, SQL, noSQL, Tableau, DevOps, ETL\ELT, Bill 25, CI/CD, GitLab, Docker, OpenShift, Kubernetes.</div>
+  </div>
+
+  <div class="entry">
+    <div class="role"><span class="title">Pharmacist Assistant</span> | Temporary full-time <b>(40 hours / week)</b></div>
+    <div class="org"><span><span class="bi">Independent pharmacies, Uniprix, Clinics, Familiprix</span> | Laval, Québec</span><span class="date">February 2017 – August 2018</span></div>
+    <ul>
+      <li>Management of medication orders and prescription processing using Telus software and coordination with suppliers and insurers.</li>
+      <li>Compounding medications, including Dispills and Compounding, and managing the distribution of refrigerated medications through Microsoft Access.</li>
+      <li>Use of advanced dispensing machines (Parata Systems, ScriptPro) and assistance to pharmacists in patient care according to protocols.</li>
+    </ul>
+  </div>
+
+  <div class="entry">
+    <div class="role"><span class="title">Seller</span> | Full-time <b>(35 hours / week)</b></div>
+    <div class="org"><span><b>BestBuy</b> | Saint-Jérôme, Québec</span><span class="date">March 2015 – August 2015</span></div>
+  </div>
+
+  <div class="entry">
+    <div class="role"><span class="title">Night Clerk</span> | Part-time <b>(25 hours / week)</b></div>
+    <div class="org"><span><b>Costco Wholesale</b> | Saint-Jérôme, Québec</span><span class="date">November 2014 – January 2017</span></div>
+  </div>
+</section>
+
+<!-- =============================== ACADEMIC HIGHLIGHTS =============================== -->
+<section class="page-break">
+  <h2>Academic Highlights</h2>
+
+  <div class="entry loose">
+    <div class="acad-role">Role: <span class="title">Computer Engineering Collaborator</span></div>
+    <div class="project">Development of a Simulation System for Aircraft Surveillance (AMS)</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">September 2022 – April 2023</span></div>
+    <ul>
+      <li>Design and development of on-board systems for air traffic control (ATC) simulators, including aircraft trajectory modeling and radar communications management.</li>
+      <li>Development of real-time software under QNX for monitoring critical systems.</li>
+      <li>Collaboration with multidisciplinary teams.</li>
+      <li>Compliance with aeronautical standards (OD-178C, ARP4754A).</li>
+      <li>Writing of technical documentation, including functional specifications and validation reports.</li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="acad-role">Role: <span class="title">Computer Engineering Collaborator &amp; Tech Lead</span></div>
+    <div class="project">Capstone Project – Transradial Robotic Prosthetics with Machine Learning Model</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">August 2021 – June 2022</span></div>
+    <ul>
+      <li>Tech Lead of an AGILE team of 6 engineers in the realization of an embedded system for transradial robotic prosthesis, integrating machine learning for muscle pattern recognition.</li>
+      <li>Project management with Trello and Git.</li>
+      <li>Design and shared development of the AI architectures and data processing models.</li>
+      <li>Modeling and manufacturing of the prosthesis, and printed circuit boards (PCBs) with KiCad, PSpice, Fusion 360.</li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="acad-role">Role: <span class="title">Biomedical Engineering Collaborator &amp; Co-Project Leader</span></div>
+    <div class="project">Blood Diagnostic Biosensor for Nutritional Deficiency</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">January 2022 – May 2022</span></div>
+    <ul>
+      <li>Co-led a multidisciplinary team of 4 members in the design of genetic biosensors for the screening of nutritional deficiencies.</li>
+      <li>Use of MATLAB and Python for data processing and analysis, as well as for modeling and simulating genetic circuits.</li>
+      <li>Leveraged GenBank, iGEM, and Benchling to analyze genetic sequences, integrate BioBrick parts, and design genetic circuits.</li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="acad-role">Role: <span class="title">Biomedical Engineering Collaborator &amp; Spokesperson</span></div>
+    <div class="project">Novel microfluidic device for intracytoplasmic sperm injection (ICSI) in the context of in vitro fertilization (IVF)</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">September 2021 – January 2022</span></div>
+    <ul>
+      <li>Collaboration with a biologist in the development of a new high-throughput microfluidic device capable of performing ICSI-IVF fertilization without human intervention.</li>
+      <li>Design and modeling of the lab-on-chip device with Fusion 360.</li>
+      <li>Exploration of 3D printing, photolithography, and micro-fabrication techniques.</li>
+      <li>Design of a control system for the automation of the fertilization process.</li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="acad-role">Role: <span class="title">Biomedical Engineering Collaborator &amp; Co-Team Leader</span></div>
+    <div class="project">Development of microfluidic device for high-throughput bacterial transformation</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">September 2021 – January 2022</span></div>
+    <ul>
+      <li>Co-led a multidisciplinary team of 6 members in the design of a high-throughput bacterial transformation and incubation microfluidic device.</li>
+      <li>Use of MATLAB for Computational Fluid Dynamics.</li>
+      <li>Exploitation of micro-channels, droplets within channels, and digital micro-fluidics (DMF).</li>
+      <li>Design and modeling of the lab-on-chip microfluidic device in Fusion 360.</li>
+      <li>Exploration of 3D printing, photolithography, and micro-fabrication techniques.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =============================== RESEARCH / PROJECTS / TRAINING =============================== -->
+<section class="page-break">
+  <h2>Research, Publications, and Contributions</h2>
+
+  <div class="entry loose">
+    <div class="bi">Analysis of fMRI data at the individual subject level</div>
+    <div class="org"><a href="https://github.com/vincbeaulieu/ELEC_445-6671_Final-Project">https://github.com/vincbeaulieu/ELEC_445-6671_Final-Project</a><span class="date">January 2023 – May 2023</span></div>
+    <ul>
+      <li>Investigated the effects of slice-timing correction order and realignment in preprocessing on General Linear Model (GLM) statistical maps in single-subject analysis (SSA).</li>
+      <li>Co-authored a report on the impact of pre-processing orders on contrast (T1, T2) in neuroimaging.</li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="bi">Automated transcription and audio summary</div>
+    <div class="org"><a href="https://github.com/vincbeaulieu/AudioReportAI">https://github.com/vincbeaulieu/AudioReportAI</a><span class="date">March 2023</span></div>
+    <ul>
+      <li>Development of a solution for automating report writing, audio summarization, and business processes.</li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="bi">Prediction of Hepatitis D virus (HDV) ribozyme self-cleavage and ligation with machine learning</div>
+    <div class="org"><a href="https://github.com/vincbeaulieu/HDV-LIG14">https://github.com/vincbeaulieu/HDV-LIG14</a><span class="date">December 2021 - September 2022</span></div>
+    <ul>
+      <li>Development of a database for the analysis of hepatitis virus RNA sequences.</li>
+      <li>Automation of RNA folding computations with database population using Shell and Python.</li>
+      <li>Development of a tool for visualizing the probability map of RNA nucleotide-to-nucleotide affinity.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Personal Projects</h2>
+  <div class="entry">
+    <div><b>Design of an Electric Handcrafted Motorcycle</b></div>
+    <div class="org"><i>Personal initiative</i><span class="date">June 2018 – June 2020</span></div>
+    <ul>
+      <li>Development of an electric motorcycle adhering to the standards of Transport Canada and the Société de l'Assurance Automobile du Québec (SAAQ) and SAE norms (SAE J1772).</li>
+      <li>Designed a custom battery management system (BMS) and developed the electrical wiring system.</li>
+      <li>Created an IoT tracking and access device with ThingsBoard.io, integrating UBlox Neo-M8N (GPS), Pycom GPY (LTE, WiFi, Bluetooth), Particle Boron 2G/3G, and NFC communication.</li>
+      <li>Developed an ABS system to improve safety, and PID for cruise control.</li>
+      <li>Configured a master-slave system using two Arduino Nano to control all accessories.</li>
+      <li>Metal work, CNC, 3D printing, welding, soldering…</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Training &amp; Certifications</h2>
+  <div class="group">
+    <p class="label">Udemy:</p>
+    <ul>
+      <li>Ultimate SnowPro Core Certification Course &amp; Exam <b>(Udemy, 2020)</b></li>
+      <li>Deep Learning and Computer Vision A-Z™: OpenCV, SSD &amp; GANs <b>(Udemy, 2019)</b></li>
+      <li>Artificial Neural Network for Regression <b>(Udemy, 2019)</b></li>
+      <li>Artificial Intelligence A-Z™, Machine Learning A-Z™, Deep Learning and NLP A-Z™ <b>(Udemy, 2018)</b></li>
+      <li>Master Data Structures &amp; Algorithms (C/C++) <b>(Udemy, 2017)</b></li>
+    </ul>
+  </div>
+  <div class="group">
+    <p class="label">Udacity:</p>
+    <ul>
+      <li>Intro to TensorFlow for Deep Learning <b>(Udacity, 2018)</b></li>
+      <li>Android TV and Google Cast Development <b>(Udacity, 2016)</b></li>
+    </ul>
+  </div>
+  <div class="group">
+    <p class="label">Coursera:</p>
+    <ul>
+      <li>Serverless Data Analysis with Google Big Query and Cloud Dataflow <b>(Coursera, 2018)</b></li>
+    </ul>
+  </div>
+  <div class="group">
+    <p class="label">In person:</p>
+    <ul>
+      <li>Generative AI with AWS (+ Introduction to AWS Bedrock) <b>(Québec, 2024)</b></li>
+      <li>Google Cloud Platform – Big Data and Machine Learning <b>(Montréal, 2018)</b></li>
+    </ul>
+  </div>
+</section>
+
+<!-- =============================== HONOURS / AFFILIATIONS / MEDIA =============================== -->
+<section class="page-break">
+  <h2>Honours and Scholarships</h2>
+
+  <div class="entry loose">
+    <div class="bi navy">Invitation to Showcase at the Chancellor's Builders Circle and Friends Dinner (CBC) (2022)</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">2022</span></div>
+    <ul>
+      <li><span class="bi">Meet 5 of Concordia's 51,000 outstanding students</span><i> - Concordia Next-gen (2022)</i><br><a href="https://www.youtube.com/watch?v=9VM5O8velT4">https://www.youtube.com/watch?v=9VM5O8velT4</a></li>
+      <li><span class="bi">2022 Chancellor's Builders Circle and Friends Dinner (CBC)</span><i> - Concordia Alumni Pics</i><br><a href="https://www.flickr.com/photos/concordiaalumnipics/albums/72177720303366435">https://www.flickr.com/photos/concordiaalumnipics/albums/72177720303366435</a></li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="bi navy">Department of Electrical &amp; Computer Engineering Honorable Mention Award (2021 – 2022)</div>
+    <div class="org"><span><span class="bi">Concordia University</span> | Montréal, Québec</span><span class="date">2021 – 2022</span></div>
+    <ul>
+      <li><i>in recognition of an excellent Undergraduate Capstone Project entitled "Prosthetic Limb"</i></li>
+    </ul>
+  </div>
+
+  <div class="entry loose">
+    <div class="bi navy">Excellence Scholarships in Computer Science, Computer Engineering and Computer Construction, and Electrical, Electronic, and Communications Engineering (2021)</div>
+    <div class="org"><span><span class="bi">Office of the Minister of Higher Education</span> | Québec City, Québec</span><span class="date">2021</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Commitments and Affiliations</h2>
+  <ul>
+    <li class="dated"><span>Member of the Ordre des ingénieurs du Québec (OIQ)</span><span class="date">September 2023 – Present</span></li>
+    <li class="dated"><span>Member of Genium360</span><span class="date">2021 – Present</span></li>
+    <li class="dated"><span>Member of the District 3 Bio cohort</span><span class="date">2024 – 2025</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Media</h2>
+  <div class="media">
+    <p>GitHub: <a href="https://github.com/vincbeaulieu">https://github.com/vincbeaulieu</a> | LinkedIn: <a href="https://www.linkedin.com/in/vincbeaulieu">https://www.linkedin.com/in/vincbeaulieu</a></p>
+    <p>YouTube: <a href="https://www.youtube.com/@vincbeaulieu">https://www.youtube.com/@vincbeaulieu</a> | Twitter: <a href="https://twitter.com/Vinc_Beaulieu">https://twitter.com/Vinc_Beaulieu</a></p>
+  </div>
+</section>
+
+</body>
+</html>
